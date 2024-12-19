@@ -388,3 +388,31 @@ body.full-page {
     margin-top: 10px;
     width: auto;
 }
+
+footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: var(--card-background);
+    border-top: 1px solid var(--border-color);
+}
+
+.linkedin-button {
+    display: inline-block;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 5px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.linkedin-button img {
+    max-width: 50px;
+    height: auto;
+    display: block;
+}
+
+.linkedin-button:hover {
+    transform: scale(1.1);
+}
