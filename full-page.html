@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drug Discovery Apps</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="chemdoodle/ChemDoodleWeb.css" type="text/css">
+    <script type="text/javascript" src="chemdoodle/ChemDoodleWeb.js"></script>
+    <link rel="stylesheet" href="chemdoodle/uis/jquery-ui-1.11.4.css" type="text/css">
+    <script type="text/javascript" src="chemdoodle/uis/ChemDoodleWeb-uis.js"></script>
+</head>
+<body class="full-page">
+    <header>
+        <h1>Drug Discovery Apps</h1>
+    </header>
+    <div class="category-navigation">
+        <button class="category-button" data-category="medchem">Medchem Tools</button>
+        <button class="category-button" data-category="pk">PK Tools</button>
+        <button class="category-button" data-category="molecular_drawer">Molecular Drawer</button>
+    </div>
+    <div class="tool-navigation"></div>
+    <main id="tool-content"></main>
+    <script src="js/utils.js"></script>
+    <script src="components/concentrationconverter.js"></script>
+    <script src="components/dosecalculator.js"></script>
+    <script src="components/efficiencymetrics.js"></script>
+    <script src="components/ic50converter.js"></script>
+    <script src="js/full-page.js"></script>
+</body>
+</html>
