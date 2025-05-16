@@ -255,7 +255,7 @@ button:hover {
 /* Full-page specific styles */
 body.full-page {
     width: 100%;
-    max-width: 800px;
+    max-width: 1500px;
     margin: 0 auto;
     padding: 20px;
 }
