@@ -416,3 +416,13 @@ footer {
 .linkedin-button:hover {
     transform: scale(1.1); /* Add slight hover effect for interactivity */
 }
+
+.full-page.spectroscopy-fullwidth {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.full-page.spectroscopy-fullwidth #tool-content {
+  padding: 0;
+}
