@@ -1,40 +1,42 @@
 /* ==================================================================
-   DrugDiscoveryApps – Pro Layout Stylesheet (2025‑05‑16)
+   DrugDiscoveryApps – Complete Pro Layout Stylesheet (2025‑05‑16)
    ------------------------------------------------------------------
-   ▶  Visual language (colours, typography) kept intact
-   ▶  Layout rebuilt with modern flex / grid
-   ▶  Fluid width on all screens, sticky navigation, mobile friendliness
+   • Retains existing colour palette & component look
+   • Fluid width, calibrated sticky header/menus
+   • Mobile‑friendly nav (horizontal scroll chips)
+   • Unified spacing / typography scale
    ==================================================================*/
 
-/* --------------------------------------------------
-   Global Design Tokens
-   --------------------------------------------------*/
 :root {
-  /* palette */
-  --primary-color:           #4A90E2;
-  --secondary-color:         #50E3C2;
-  --accent-red:              #E74C3C;
-  --text-color:              #2C3E50;
-  --background-color:        #F7F9FC;
-  --card-color:              #FFFFFF;
-  --border-color:            #D6D9DD;
-  --hover-color:             #5DADE2;
-  --button-bg:               #E6EEF5;
-  --button-bg-hov:           #D0D9E2;
-  --error-bg:                #FDEDEC;
-  --error-border:            #F5B7B1;
+  /* --- colour palette --- */
+  --primary-color:      #4A90E2;
+  --secondary-color:    #50E3C2;
+  --accent-red:         #E74C3C;
+  --text-color:         #2C3E50;
+  --background-color:   #F7F9FC;
+  --card-color:         #FFFFFF;
+  --border-color:       #D6D9DD;
+  --hover-color:        #5DADE2;
+  --button-bg:          #E6EEF5;
+  --button-bg-hov:      #D0D9E2;
+  --error-bg:           #FDEDEC;
+  --error-border:       #F5B7B1;
 
-  /* spacing scale */
+  /* --- spacing scale --- */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 24px;
   --space-6: 32px;
+
+  /* --- calibrated sticky heights --- */
+  --header-h: 56px;
+  --nav-h:    44px;
 }
 
 /* --------------------------------------------------
-   Reset / Base
+   Global / reset
    --------------------------------------------------*/
 html,
 body {
@@ -50,106 +52,115 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* --------------------------------------------------
-   Layout shell
-   --------------------------------------------------*/
 body.full-page {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
+/* --------------------------------------------------
+   Header
+   --------------------------------------------------*/
 header {
+  height: var(--header-h);
+  padding: 0 var(--space-5);
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-3) var(--space-5);
   background: var(--card-color);
   border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   position: sticky;
   top: 0;
-  z-index: 200;
+  z-index: 1000;
+  box-shadow: 0 1px 2px rgba(0,0,0,.05);
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
 }
 
 /* --------------------------------------------------
-   Navigation rows (sticky, scrollable on mobile)
+   Navigation rows (sticky + scrollable)
    --------------------------------------------------*/
 .category-navigation,
 .tool-navigation {
+  height: var(--nav-h);
   display: flex;
+  align-items: center;
+  justify-content: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
+  padding: 0 var(--space-4);
   background: var(--card-color);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  border-bottom: 1px solid var(--border-color);
   position: sticky;
-  top: calc(56px + 1px); /* ≈ header height */
-  z-index: 150;
+  z-index: 900;
   overflow-x: auto;
   overscroll-behavior-x: contain;
+  scrollbar-width: none;          /* Firefox */
 }
-
-.tool-navigation { top: calc(56px + 48px + 2px); } /* header + cat row */
-
 .category-navigation::-webkit-scrollbar,
 .tool-navigation::-webkit-scrollbar { display: none; }
+
+.category-navigation { top: var(--header-h); }
+.tool-navigation      { top: calc(var(--header-h) + var(--nav-h)); }
 
 .category-button,
 .tool-button {
   flex: 0 0 auto;
+  padding: var(--space-2) var(--space-4);
   border: none;
   border-radius: 6px;
-  padding: var(--space-2) var(--space-4);
-  font-size: 16px;
-  cursor: pointer;
   background: var(--button-bg);
+  cursor: pointer;
+  font-size: 15px;
   transition: background .25s;
   white-space: nowrap;
 }
-
 .category-button:hover,
 .tool-button:hover { background: var(--button-bg-hov); }
 
-.category-button.active[data-category="medchem"] { background: var(--primary-color); color:#fff; }
-.category-button.active[data-category="pk"]      { background: var(--accent-red);  color:#fff; }
+.category-button.active[data-category="medchem"] { background: var(--primary-color); color: #fff; }
+.category-button.active[data-category="pk"]      { background: var(--accent-red);  color: #fff; }
 .category-button.active,
 .tool-button.active { font-weight: 600; }
 
 /* --------------------------------------------------
-   Content container
+   Main content container
    --------------------------------------------------*/
 main,
 #tool-content {
   flex: 1 1 auto;
-  padding: var(--space-5);
-  box-sizing: border-box;
-  max-width: 1440px;
   width: 100%;
+  max-width: 1440px;
   margin: 0 auto;
+  padding: calc(var(--space-6) + var(--header-h) + var(--nav-h)*2) var(--space-5) var(--space-6);
+  /* extra top padding keeps first card clear of sticky bars */
+  box-sizing: border-box;
 }
 
-/* Wide‑bleed mode for Spectroscopy */
+/* Full‑bleed override for Spectroscopy */
 body.full-page.spectroscopy-fullwidth main,
 body.full-page.spectroscopy-fullwidth #tool-content {
   max-width: none;
-  padding-left: var(--space-5);
-  padding-right: var(--space-5);
 }
 
 /* --------------------------------------------------
-   Cards / tool sections
+   Cards & generic sections
    --------------------------------------------------*/
 .tool-section {
   background: var(--card-color);
   border-radius: 10px;
   padding: var(--space-5);
   margin-bottom: var(--space-5);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 6px rgba(0,0,0,.06);
 }
 
-/* Forms */
-.input-group    { margin-bottom: var(--space-3); }
-label           { display:block; margin-bottom:var(--space-1); font-weight:600; }
+/* --------------------------------------------------
+   Form elements
+   --------------------------------------------------*/
+.input-group { margin-bottom: var(--space-3); }
+label        { display: block; margin-bottom: var(--space-1); font-weight: 600; }
 
 input[type="number"],
 input[type="text"],
@@ -164,92 +175,114 @@ select {
 }
 
 button {
-  display:inline-flex;
-  justify-content:center;
-  align-items:center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   gap: var(--space-1);
-  width:100%;
+  width: 100%;
   padding: var(--space-3) var(--space-4);
-  border:none;
-  border-radius:6px;
+  border: none;
+  border-radius: 6px;
   background: var(--primary-color);
-  color:#fff;
-  font-weight:600;
-  cursor:pointer;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
   transition: background .25s, transform .15s;
 }
-button:hover { background: var(--secondary-color); transform: translateY(-2px); }
-button:active{ transform: translateY(0); }
+button:hover  { background: var(--secondary-color); transform: translateY(-2px); }
+button:active { transform: none; }
 
-/* Result box */
+/* Result boxes */
 .result-box {
   margin-top: var(--space-3);
   padding: var(--space-3);
-  border:1px solid var(--primary-color);
-  border-radius:6px;
-  background:#e6f3ff;
-  font-weight:500;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  border: 1px solid var(--primary-color);
+  border-radius: 6px;
+  background: #e6f3ff;
+  font-weight: 500;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.05);
 }
 
-/* Converter layout */
+/* --------------------------------------------------
+   Converter layout helper
+   --------------------------------------------------*/
 .converter-layout {
-  display:flex;
-  align-items:center;
+  display: flex;
+  align-items: center;
   gap: var(--space-3);
 }
-.converter-layout .input-group { flex: 1; margin:0; }
-.converter-layout .operator    { font-size:18px; color:var(--secondary-color); }
+.converter-layout .input-group { flex: 1; margin: 0; }
+.converter-layout .operator    { font-size: 18px; color: var(--secondary-color); }
 
-/* Scrollbar (WebKit) */
-main::-webkit-scrollbar          { width:8px; }
-main::-webkit-scrollbar-track    { background: transparent; }
-main::-webkit-scrollbar-thumb    { background: var(--primary-color); border-radius:4px; }
+/* --------------------------------------------------
+   Accordion component
+   --------------------------------------------------*/
+.accordion-item    { border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: var(--space-3); }
+.accordion-header  { background: var(--primary-color); color: #fff; padding: var(--space-3); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.accordion-header:hover { background: var(--hover-color); }
+.accordion-content { padding: var(--space-3); background: var(--card-color); }
 
-/* Accordions */
-.accordion-item       { border:1px solid var(--border-color); border-radius:8px; overflow:hidden; margin-bottom: var(--space-3); }
-.accordion-header     { background:var(--primary-color); color:#fff; padding: var(--space-3); display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
-.accordion-header:hover{ background:var(--hover-color); }
-.accordion-content    { padding: var(--space-3); background: var(--card-color); }
-
-/* Molecular drawer */
+/* --------------------------------------------------
+   Molecular drawer specific
+   --------------------------------------------------*/
 .drawer-selection {
-  display:flex;
-  justify-content:center;
+  display: flex;
+  justify-content: center;
   gap: var(--space-4);
   margin-bottom: var(--space-4);
 }
-.drawer-selection button { width:auto; flex:0 0 auto; background:var(--primary-color); color:#fff; border-radius:6px; padding: var(--space-2) var(--space-4); }
-.drawer-selection button:hover { background:var(--hover-color); }
+.drawer-selection button { width: auto; flex: 0 0 auto; background: var(--primary-color); color: #fff; border-radius: 6px; padding: var(--space-2) var(--space-4); }
+.drawer-selection button:hover { background: var(--hover-color); }
 
-#drawer-container { min-height:600px; }
-#drawer-container>* { width:100%; max-width:900px; margin:0 auto; display:block; }
-
-/* Error banner */
-#error-log { color:var(--accent-red); background:var(--error-bg); border:1px solid var(--error-border); padding: var(--space-3); margin-top: var(--space-5); }
-
-/* Footer */
-footer {
-  margin-top:auto;
-  padding: var(--space-6) 0;
-  background: var(--card-color);
-  border-top:1px solid var(--border-color);
-  display:flex;
-  justify-content:center;
-}
-.linkedin-button      { transition: transform .2s; display:inline-block; }
-.linkedin-button:hover{ transform: scale(1.08); }
-.linkedin-button img  { max-width:200px; height:auto; display:block; }
-
-/* Utility */
-.hidden { display:none !important; }
+#drawer-container { min-height: 600px; }
+#drawer-container > * { width: 100%; max-width: 900px; margin: 0 auto; display: block; }
 
 /* --------------------------------------------------
-   Responsive adjustments
+   Error banner
+   --------------------------------------------------*/
+#error-log {
+  color: var(--accent-red);
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  padding: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+/* --------------------------------------------------
+   Footer
+   --------------------------------------------------*/
+footer {
+  margin-top: auto;
+  padding: var(--space-6) 0;
+  background: var(--card-color);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: center;
+}
+.linkedin-button      { transition: transform .2s; display: inline-block; }
+.linkedin-button:hover{ transform: scale(1.08); }
+.linkedin-button img  { max-width: 200px; height: auto; display: block; }
+
+/* --------------------------------------------------
+   Scrollbars – WebKit & Firefox thin
+   --------------------------------------------------*/
+main::-webkit-scrollbar,
+#tool-content::-webkit-scrollbar { width: 8px; }
+main::-webkit-scrollbar-track,
+#tool-content::-webkit-scrollbar-track { background: transparent; }
+main::-webkit-scrollbar-thumb,
+#tool-content::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 4px; }
+
+/* --------------------------------------------------
+   Utility classes
+   --------------------------------------------------*/
+.hidden { display: none !important; }
+
+/* --------------------------------------------------
+   Responsive tweaks
    --------------------------------------------------*/
 @media (max-width: 600px) {
   h1 { font-size: 1.15rem; }
-  h2 { font-size: 1rem; }
-  main, #tool-content { padding: var(--space-4); }
-  .tool-section      { padding: var(--space-4); }
+  main, #tool-content { padding: calc(var(--space-5) + var(--header-h) + var(--nav-h)*2) var(--space-4) var(--space-5); }
+  .tool-section { padding: var(--space-4); }
 }
