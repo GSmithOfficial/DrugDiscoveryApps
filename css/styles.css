@@ -260,6 +260,17 @@ body.full-page {
     padding: 20px;
 }
 
+/* ─── Full-bleed layout for Spectroscopy ─── */
+body.full-page.spectroscopy-fullwidth {
+    max-width: none !important;   /* lift the 800-px cap */
+    padding-left: 0;
+    padding-right: 0;
+}
+
+body.full-page.spectroscopy-fullwidth #tool-content {
+    padding: 0;                   /* optional: remove inner padding */
+}
+
 .full-page .category-navigation,
 .full-page .tool-navigation {
     margin-bottom: 20px;

@@ -1,5 +1,5 @@
-// full-page.js – consolidated version with full-width toggle for Spectroscopy
-// ---------------------------------------------------------------
+// full-page.js – with full-width toggle for Spectroscopy
+// -----------------------------------------------------
 
 document.addEventListener('DOMContentLoaded', () => {
   const categoryButtons = document.querySelectorAll('.category-button');
@@ -45,24 +45,23 @@ document.addEventListener('DOMContentLoaded', () => {
     tool.init(toolContent);
   }
 
-  /* ---------- Category navigation with full-width toggle ---------- */
+  /* ---------- Category navigation (with full-bleed toggle) ---------- */
   categoryButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const category = btn.dataset.category;
 
-      // Toggle full-width layout on the root wrapper
-      const pageWrapper = document.querySelector('.full-page');
+      /* ▪️  Add / remove class on <body>  */
+      const body = document.body;            // body already has class="full-page"
       if (category === 'spectroscopy') {
-        pageWrapper.classList.add('spectroscopy-fullwidth');
+        body.classList.add('spectroscopy-fullwidth');
       } else {
-        pageWrapper.classList.remove('spectroscopy-fullwidth');
+        body.classList.remove('spectroscopy-fullwidth');
       }
 
-      // Activate button UI
+      /*  Activate button & load tools  */
       categoryButtons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      // Populate and load first tool in category
       populateToolNavigation(category);
       loadTool(category, tools[category][0].id);
     });
@@ -81,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTool(category, toolId);
   });
 
-  /* ---------- Initial deep‑link ---------- */
+  /* ---------- Initial deep-link ---------- */
   const params        = new URLSearchParams(window.location.search);
   const startCategory = params.get('category') || 'medchem';
   const startTool     = params.get('tool')     || tools[startCategory][0].id;
