@@ -109,12 +109,15 @@ h1 {
   position: sticky;
   top: var(--header-h);
   z-index: 900;
+  width: 100%;
 }
 
 .nav-content {
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 0 var(--content-padding);
+  display: flex;
+  flex-direction: column;
 }
 
 .category-navigation,
@@ -122,11 +125,20 @@ h1 {
   height: var(--nav-h);
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+.category-navigation {
+  border-bottom: 1px solid var(--border-color);
 }
 
 .category-navigation::-webkit-scrollbar,
@@ -137,6 +149,7 @@ h1 {
 .category-button,
 .tool-button {
   flex: 0 0 auto;
+  min-width: fit-content;
   padding: var(--space-2) var(--space-4);
   border: none;
   border-radius: 6px;
@@ -147,6 +160,10 @@ h1 {
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .category-button:hover,
@@ -157,6 +174,9 @@ h1 {
 
 .category-button.active[data-category="medchem"] { background: var(--primary-color); color: #fff; }
 .category-button.active[data-category="pk"] { background: var(--accent-red); color: #fff; }
+.category-button.active[data-category="molecular_drawer"] { background: var(--secondary-color); color: #fff; }
+.category-button.active[data-category="spectroscopy"] { background: var(--hover-color); color: #fff; }
+
 .category-button.active,
 .tool-button.active {
   font-weight: 600;
