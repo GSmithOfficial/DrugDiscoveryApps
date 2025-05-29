@@ -1,10 +1,10 @@
 /* ==================================================================
-   DrugDiscoveryApps – Complete Pro Layout Stylesheet (2025‑05‑16)
+   DrugDiscoveryApps – Modern Responsive Layout (2024)
    ------------------------------------------------------------------
-   • Retains existing colour palette & component look
-   • Fluid width, calibrated sticky header/menus
-   • Mobile‑friendly nav (horizontal scroll chips)
-   • Unified spacing / typography scale
+   • Modern responsive layout with CSS Grid and Flexbox
+   • Fluid typography and spacing
+   • Improved mobile experience
+   • Better component organization
    ==================================================================*/
 
 :root {
@@ -23,87 +23,116 @@
   --error-border:       #F5B7B1;
 
   /* --- spacing scale --- */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
+  --space-1: clamp(4px, 0.25vw, 6px);
+  --space-2: clamp(8px, 0.5vw, 12px);
+  --space-3: clamp(12px, 0.75vw, 16px);
+  --space-4: clamp(16px, 1vw, 24px);
+  --space-5: clamp(24px, 1.5vw, 32px);
+  --space-6: clamp(32px, 2vw, 48px);
 
-  /* --- calibrated sticky heights --- */
-  --header-h: 56px;
-  --nav-h:    44px;
+  /* --- layout dimensions --- */
+  --header-h: 60px;
+  --nav-h: 48px;
+  --max-width: 1440px;
+  --content-padding: var(--space-4);
 }
 
 /* --------------------------------------------------
-   Global / reset
+   Reset & Base Styles
    --------------------------------------------------*/
-html,
-body {
+*, *::before, *::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html, body {
   height: 100%;
-  width:  100%;
+  width: 100%;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 15px;
   line-height: 1.5;
   color: var(--text-color);
   background: var(--background-color);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-body.full-page {
-  display: flex;
-  flex-direction: column;
+/* --------------------------------------------------
+   Layout Container
+   --------------------------------------------------*/
+.app-container {
   min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  grid-template-areas: 
+    "header"
+    "nav"
+    "main"
+    "footer";
 }
 
 /* --------------------------------------------------
    Header
    --------------------------------------------------*/
-header {
-  height: var(--header-h);
-  padding: 0 var(--space-5);
-  display: flex;
-  align-items: center;
+.app-header {
+  grid-area: header;
   background: var(--card-color);
   border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: 0 1px 2px rgba(0,0,0,.05);
+  height: var(--header-h);
+}
+
+.header-content {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--content-padding);
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 
 h1 {
-  margin: 0;
-  font-size: 1.3rem;
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
   font-weight: 600;
 }
 
 /* --------------------------------------------------
-   Navigation rows (sticky + scrollable)
+   Navigation
    --------------------------------------------------*/
+.app-navigation {
+  grid-area: nav;
+  background: var(--card-color);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: var(--header-h);
+  z-index: 900;
+}
+
+.nav-content {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--content-padding);
+}
+
 .category-navigation,
 .tool-navigation {
   height: var(--nav-h);
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: var(--space-2);
-  padding: 0 var(--space-4);
-  background: var(--card-color);
-  border-bottom: 1px solid var(--border-color);
-  position: sticky;
-  z-index: 900;
   overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;          /* Firefox */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
 }
-.category-navigation::-webkit-scrollbar,
-.tool-navigation::-webkit-scrollbar { display: none; }
 
-.category-navigation { top: var(--header-h); }
-.tool-navigation      { top: calc(var(--header-h) + var(--nav-h)); }
+.category-navigation::-webkit-scrollbar,
+.tool-navigation::-webkit-scrollbar {
+  display: none;
+}
 
 .category-button,
 .tool-button {
@@ -112,53 +141,152 @@ h1 {
   border: none;
   border-radius: 6px;
   background: var(--button-bg);
+  color: var(--text-color);
+  font-size: 0.9375rem;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 15px;
-  transition: background .25s;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
+
 .category-button:hover,
-.tool-button:hover { background: var(--button-bg-hov); }
+.tool-button:hover {
+  background: var(--button-bg-hov);
+  transform: translateY(-1px);
+}
 
 .category-button.active[data-category="medchem"] { background: var(--primary-color); color: #fff; }
-.category-button.active[data-category="pk"]      { background: var(--accent-red);  color: #fff; }
+.category-button.active[data-category="pk"] { background: var(--accent-red); color: #fff; }
 .category-button.active,
-.tool-button.active { font-weight: 600; }
+.tool-button.active {
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 
 /* --------------------------------------------------
-   Main content container
+   Main Content
    --------------------------------------------------*/
-main,
-#tool-content {
-  flex: 1 1 auto;
+.main-content {
+  grid-area: main;
   width: 100%;
-  max-width: 1440px;
+  max-width: var(--max-width);
   margin: 0 auto;
-  padding: calc(var(--space-6) + var(--header-h) + var(--nav-h)*2) var(--space-5) var(--space-6);
-  /* extra top padding keeps first card clear of sticky bars */
-  box-sizing: border-box;
+  padding: var(--space-6) var(--content-padding);
 }
 
-/* Full‑bleed override for Spectroscopy */
-body.full-page.spectroscopy-fullwidth main,
-body.full-page.spectroscopy-fullwidth #tool-content {
+/* Full-width override for Spectroscopy */
+body.spectroscopy-fullwidth .main-content {
   max-width: none;
+  padding: 0;
 }
 
 /* --------------------------------------------------
-   Cards & generic sections
+   Tool Sections
    --------------------------------------------------*/
 .tool-section {
   background: var(--card-color);
   border-radius: 10px;
   padding: var(--space-5);
   margin-bottom: var(--space-5);
-  box-shadow: 0 2px 6px rgba(0,0,0,.06);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
 
 /* --------------------------------------------------
-   Form elements
+   Footer
    --------------------------------------------------*/
+.app-footer {
+  grid-area: footer;
+  background: var(--card-color);
+  border-top: 1px solid var(--border-color);
+  padding: var(--space-5) 0;
+}
+
+.footer-content {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--content-padding);
+  display: flex;
+  justify-content: center;
+}
+
+.linkedin-button {
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.linkedin-button:hover {
+  transform: scale(1.05);
+}
+
+.linkedin-button img {
+  max-width: 200px;
+  height: auto;
+  display: block;
+}
+
+/* --------------------------------------------------
+   NMRium Viewer Styles
+   --------------------------------------------------*/
+.nmrium-container {
+  height: calc(100vh - var(--header-h) - var(--nav-h)*2);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  margin: 0;
+  border-radius: 0;
+}
+
+.nmrium-wrapper {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  margin-top: var(--space-3);
+}
+
+.nmrium-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* --------------------------------------------------
+   Responsive Design
+   --------------------------------------------------*/
+@media (max-width: 768px) {
+  :root {
+    --content-padding: var(--space-3);
+  }
+
+  .category-navigation,
+  .tool-navigation {
+    justify-content: flex-start;
+    padding: 0 var(--space-2);
+  }
+
+  .tool-section {
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --header-h: 50px;
+    --nav-h: 44px;
+  }
+
+  .category-button,
+  .tool-button {
+    padding: var(--space-2) var(--space-3);
+    font-size: 0.875rem;
+  }
+}
+
+/* Maintain proper spacing for form elements */
 .input-group { margin-bottom: var(--space-3); }
 label        { display: block; margin-bottom: var(--space-1); font-weight: 600; }
 
@@ -249,21 +377,6 @@ button:active { transform: none; }
 }
 
 /* --------------------------------------------------
-   Footer
-   --------------------------------------------------*/
-footer {
-  margin-top: auto;
-  padding: var(--space-6) 0;
-  background: var(--card-color);
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  justify-content: center;
-}
-.linkedin-button      { transition: transform .2s; display: inline-block; }
-.linkedin-button:hover{ transform: scale(1.08); }
-.linkedin-button img  { max-width: 200px; height: auto; display: block; }
-
-/* --------------------------------------------------
    Scrollbars – WebKit & Firefox thin
    --------------------------------------------------*/
 main::-webkit-scrollbar,
@@ -277,46 +390,3 @@ main::-webkit-scrollbar-thumb,
    Utility classes
    --------------------------------------------------*/
 .hidden { display: none !important; }
-
-/* --------------------------------------------------
-   Responsive tweaks
-   --------------------------------------------------*/
-@media (max-width: 600px) {
-  h1 { font-size: 1.15rem; }
-  main, #tool-content { padding: calc(var(--space-5) + var(--header-h) + var(--nav-h)*2) var(--space-4) var(--space-5); }
-  .tool-section { padding: var(--space-4); }
-}
-
-/* --------------------------------------------------
-   NMRium Viewer Styles
-   --------------------------------------------------*/
-.nmrium-container {
-  height: calc(100vh - var(--header-h) - var(--nav-h)*2 - var(--space-6)*2);
-  display: flex;
-  flex-direction: column;
-  padding: var(--space-4);
-}
-
-.nmrium-wrapper {
-  flex: 1;
-  min-height: 0;
-  position: relative;
-  margin-top: var(--space-3);
-}
-
-.nmrium-wrapper iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-/* Ensure proper spacing in spectroscopy full-width mode */
-body.spectroscopy-fullwidth .nmrium-container {
-  margin: 0;
-  border-radius: 0;
-  height: calc(100vh - var(--header-h) - var(--nav-h)*2);
-}
