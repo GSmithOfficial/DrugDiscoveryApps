@@ -122,23 +122,17 @@ h1 {
 
 .category-navigation,
 .tool-navigation {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   height: var(--nav-h);
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   gap: var(--space-2);
-  padding: 0;
-  margin: 0;
-  list-style: none;
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
-  width: 100%;
-}
-
-.category-navigation {
-  border-bottom: 1px solid var(--border-color);
 }
 
 .category-navigation::-webkit-scrollbar,
@@ -146,11 +140,22 @@ h1 {
   display: none;
 }
 
+.category-navigation li,
+.tool-navigation li {
+  margin: 0;
+  padding: 0;
+}
+
 .category-button,
 .tool-button {
-  flex: 0 0 auto;
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: fit-content;
-  padding: var(--space-2) var(--space-4);
+  height: calc(var(--nav-h) - var(--space-3));
+  padding: 0 var(--space-4);
   border: none;
   border-radius: 6px;
   background: var(--button-bg);
@@ -160,10 +165,8 @@ h1 {
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  text-decoration: none;
   margin: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .category-button:hover,

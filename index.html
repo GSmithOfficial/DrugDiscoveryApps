@@ -20,17 +20,17 @@
         
         <nav class="app-navigation">
             <div class="nav-content">
-                <div class="category-navigation">
-                    <button class="category-button" data-category="medchem">Medchem Tools</button>
-                    <button class="category-button" data-category="pk">PK Tools</button>
-                    <button class="category-button" data-category="molecular_drawer">Molecular Drawer</button>
-                    <button class="category-button" data-category="spectroscopy">Spectroscopy</button>
-                </div>
-                <div class="tool-navigation"></div>
+                <ul class="category-navigation" role="tablist">
+                    <li><button class="category-button" data-category="medchem" role="tab">Medchem Tools</button></li>
+                    <li><button class="category-button" data-category="pk" role="tab">PK Tools</button></li>
+                    <li><button class="category-button" data-category="molecular_drawer" role="tab">Molecular Drawer</button></li>
+                    <li><button class="category-button" data-category="spectroscopy" role="tab">Spectroscopy</button></li>
+                </ul>
+                <ul class="tool-navigation" role="tablist"></ul>
             </div>
         </nav>
 
-        <main id="tool-content" class="main-content"></main>
+        <main id="tool-content" class="main-content" role="tabpanel"></main>
 
         <footer class="app-footer">
             <div class="footer-content">
