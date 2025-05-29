@@ -45,25 +45,36 @@ document.addEventListener('DOMContentLoaded', () => {
     tool.init(toolContent);
   }
 
-  /* ---------- Category navigation (with full-bleed toggle) ---------- */
+  function activateCategory(category, shouldTriggerLoad = true) {
+    // Update body class
+    const body = document.body;
+    if (category === 'spectroscopy') {
+      body.classList.add('spectroscopy-fullwidth');
+    } else {
+      body.classList.remove('spectroscopy-fullwidth');
+    }
+
+    // Update button states
+    categoryButtons.forEach(b => {
+      if (b.dataset.category === category) {
+        b.classList.add('active');
+      } else {
+        b.classList.remove('active');
+      }
+    });
+
+    // Update tools
+    if (shouldTriggerLoad) {
+      populateToolNavigation(category);
+      loadTool(category, tools[category][0].id);
+    }
+  }
+
+  /* ---------- Category navigation ---------- */
   categoryButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const category = btn.dataset.category;
-
-      /* ▪️  Add / remove class on <body>  */
-      const body = document.body;            // body already has class="full-page"
-      if (category === 'spectroscopy') {
-        body.classList.add('spectroscopy-fullwidth');
-      } else {
-        body.classList.remove('spectroscopy-fullwidth');
-      }
-
-      /*  Activate button & load tools  */
-      categoryButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      populateToolNavigation(category);
-      loadTool(category, tools[category][0].id);
+      activateCategory(category);
     });
   });
 
@@ -80,13 +91,16 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTool(category, toolId);
   });
 
-  /* ---------- Initial deep-link ---------- */
-  const params        = new URLSearchParams(window.location.search);
+  /* ---------- Initial state ---------- */
+  const params = new URLSearchParams(window.location.search);
   const startCategory = params.get('category') || 'medchem';
-  const startTool     = params.get('tool')     || tools[startCategory][0].id;
-
-  document.querySelector(`[data-category="${startCategory}"]`)?.click();
-  document.querySelector(`[data-tool-id="${startTool}"]`)?.click();
+  
+  // Ensure initial category is valid
+  if (tools[startCategory]) {
+    activateCategory(startCategory, true);
+  } else {
+    activateCategory('medchem', true);
+  }
 });
 
 /* =====================================================================
