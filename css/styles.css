@@ -110,6 +110,7 @@ h1 {
   top: var(--header-h);
   z-index: 900;
   width: 100%;
+  padding: var(--space-4) 0;
 }
 
 .nav-content {
@@ -118,6 +119,7 @@ h1 {
   padding: 0 var(--content-padding);
   display: flex;
   flex-direction: column;
+  gap: var(--space-3);
 }
 
 .category-navigation,
@@ -128,11 +130,19 @@ h1 {
   height: var(--nav-h);
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 1px;
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
+  background: var(--button-bg);
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.tool-navigation {
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
 }
 
 .category-navigation::-webkit-scrollbar,
@@ -144,6 +154,8 @@ h1 {
 .tool-navigation li {
   margin: 0;
   padding: 0;
+  flex: 1;
+  min-width: fit-content;
 }
 
 .category-button,
@@ -153,12 +165,12 @@ h1 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: fit-content;
-  height: calc(var(--nav-h) - var(--space-3));
+  width: 100%;
+  height: calc(var(--nav-h) - 8px);
   padding: 0 var(--space-4);
   border: none;
   border-radius: 6px;
-  background: var(--button-bg);
+  background: transparent;
   color: var(--text-color);
   font-size: 0.9375rem;
   font-weight: 500;
@@ -167,6 +179,28 @@ h1 {
   white-space: nowrap;
   text-decoration: none;
   margin: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.category-button::before,
+.tool-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--primary-color);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 0;
+}
+
+.category-button > span,
+.tool-button > span {
+  position: relative;
+  z-index: 1;
 }
 
 .category-button:hover,
@@ -175,15 +209,58 @@ h1 {
   transform: translateY(-1px);
 }
 
-.category-button.active[data-category="medchem"] { background: var(--primary-color); color: #fff; }
-.category-button.active[data-category="pk"] { background: var(--accent-red); color: #fff; }
-.category-button.active[data-category="molecular_drawer"] { background: var(--secondary-color); color: #fff; }
-.category-button.active[data-category="spectroscopy"] { background: var(--hover-color); color: #fff; }
-
-.category-button.active,
-.tool-button.active {
+/* Active states with unique colors per category */
+.category-button.active {
+  background: var(--card-color);
+  color: var(--primary-color);
   font-weight: 600;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.category-button.active[data-category="medchem"] { 
+  background: var(--card-color);
+  color: var(--primary-color);
+}
+
+.category-button.active[data-category="pk"] { 
+  background: var(--card-color);
+  color: var(--accent-red);
+}
+
+.category-button.active[data-category="molecular_drawer"] { 
+  background: var(--card-color);
+  color: var(--secondary-color);
+}
+
+.category-button.active[data-category="spectroscopy"] { 
+  background: var(--card-color);
+  color: var(--hover-color);
+}
+
+.tool-button.active {
+  background: var(--card-color);
+  color: var(--primary-color);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Hover indicators */
+.category-button:hover::before,
+.tool-button:hover::before {
+  opacity: 0.1;
+}
+
+/* Add subtle separators */
+.category-navigation li:not(:last-child)::after,
+.tool-navigation li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 20%;
+  height: 60%;
+  width: 1px;
+  background: var(--border-color);
+  opacity: 0.5;
 }
 
 /* --------------------------------------------------
