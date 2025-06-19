@@ -1,27 +1,29 @@
-/* full-page.js – mega‑menu navigation (2025‑05‑17)
-   ──────────────────────────────────────────────────────────────────
-   • Single sticky tab row (categories) with ink‑bar
-   • Slide‑down sheet reveals tools for active category on click / hover
-   • Re‑uses existing tool registry and init functions
-*/
+/* full-page.js – mega-menu navigation with safe tool stubs (2025-05-18) */
 
 document.addEventListener('DOMContentLoaded', () => {
-  /* ---------- Data ---------- */
+  /* --------------------------------------------------
+     helper to guard missing component scripts
+     --------------------------------------------------*/
+  const safe = fn => (typeof fn === 'function' ? fn : (c)=>{
+    c.innerHTML = '<p style="padding:24px;color:var(--accent-red);text-align:center">Tool unavailable (missing script)</p>';
+  });
+
+  /* ---------- Tool registry ---------- */
   const tools = {
     medchem: [
-      { id: 'ic50-converter',         name: 'IC50 Converter',     init: initIC50Converter },
-      { id: 'efficiency-metrics',     name: 'Efficiency Metrics', init: initEfficiencyMetrics },
-      { id: 'concentration-converter',name: 'Conc. Converter',    init: initConcentrationConverter }
+      { id: 'ic50-converter',         name: 'IC50 Converter',     init: safe(window.initIC50Converter) },
+      { id: 'efficiency-metrics',     name: 'Efficiency Metrics', init: safe(window.initEfficiencyMetrics) },
+      { id: 'concentration-converter',name: 'Conc. Converter',    init: safe(window.initConcentrationConverter) }
     ],
     pk: [
-      { id: 'concentration-converter',name: 'Conc. Converter',    init: initConcentrationConverter },
-      { id: 'dose-calculator',        name: 'Dose Calculator',    init: initDoseCalculator }
+      { id: 'concentration-converter',name: 'Conc. Converter',    init: safe(window.initConcentrationConverter) },
+      { id: 'dose-calculator',        name: 'Dose Calculator',    init: safe(window.initDoseCalculator) }
     ],
     molecular_drawer: [
-      { id: 'molecular-drawer',       name: 'Molecular Drawer',   init: initMolecularDrawer }
+      { id: 'molecular-drawer',       name: 'Molecular Drawer',   init: safe(window.initMolecularDrawer) }
     ],
     spectroscopy: [
-      { id: 'nmrium-viewer',          name: 'NMR Viewer',         init: initNMRViewer }
+      { id: 'nmrium-viewer',          name: 'NMR Viewer',         init: safe(window.initNMRViewer) }
     ]
   };
 
@@ -53,13 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ---------- Functions ---------- */
   function openCategory(cat) {
-    // highlight tab & move ink
     [...nav.querySelectorAll('.tab')].forEach(t => t.classList.toggle('active', t.dataset.category===cat));
     const activeTab = nav.querySelector('.tab.active');
     ink.style.width  = `${activeTab.offsetWidth}px`;
     ink.style.left   = `${activeTab.offsetLeft}px`;
 
-    // populate sheet
     sheet.innerHTML = '';
     tools[cat].forEach(tool => {
       const btn = document.createElement('button');
@@ -69,9 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', () => loadTool(cat, tool.id));
       sheet.appendChild(btn);
     });
-    sheet.style.height = `${sheet.scrollHeight}px`; // slide‑down
+    sheet.style.height = `${sheet.scrollHeight}px`;
 
-    // load first tool initially
     loadTool(cat, tools[cat][0].id);
   }
 
@@ -80,8 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!tool) return;
     toolHolder.innerHTML='';
     tool.init(toolHolder);
-
-    // highlight active tool button
     [...sheet.querySelectorAll('.tool-btn')].forEach(b=>b.classList.toggle('active', b.dataset.toolId===toolId));
   }
 
@@ -92,15 +89,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // collapse sheet on scroll down (simple)
-  let lastY = window.scrollY;
-  window.addEventListener('scroll', ()=>{
-    const y = window.scrollY;
+  let lastY=0;
+  window.addEventListener('scroll',()=>{
+    const y=window.scrollY;
     nav.classList.toggle('compact', y>100);
     sheet.classList.toggle('compact', y>100);
-    lastY = y;
+    lastY=y;
   });
 
-  // initial state
+  /* ---------- init ---------- */
   openCategory('medchem');
 });
