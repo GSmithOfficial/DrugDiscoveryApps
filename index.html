@@ -11,27 +11,42 @@
     <script type="text/javascript" src="chemdoodle/uis/ChemDoodleWeb-uis.js"></script>
 </head>
 <body class="full-page">
-    <header>
-        <h1>Drug Discovery Apps</h1>
-    </header>
-    <div class="category-navigation">
-        <button class="category-button" data-category="medchem">Medchem Tools</button>
-        <button class="category-button" data-category="pk">PK Tools</button>
-        <button class="category-button" data-category="molecular_drawer">Molecular Drawer</button>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-content">
+                <h1>Drug Discovery Apps</h1>
+            </div>
+        </header>
+        
+        <nav class="app-navigation">
+            <div class="nav-content">
+                <ul class="category-navigation" role="tablist">
+                    <li><button class="category-button" data-category="medchem" role="tab"><span>Medchem Tools</span></button></li>
+                    <li><button class="category-button" data-category="pk" role="tab"><span>PK Tools</span></button></li>
+                    <li><button class="category-button" data-category="molecular_drawer" role="tab"><span>Molecular Drawer</span></button></li>
+                    <li><button class="category-button" data-category="spectroscopy" role="tab"><span>Spectroscopy</span></button></li>
+                </ul>
+                <ul class="tool-navigation" role="tablist"></ul>
+            </div>
+        </nav>
+
+        <main id="tool-content" class="main-content" role="tabpanel"></main>
+
+        <footer class="app-footer">
+            <div class="footer-content">
+                <a href="https://www.linkedin.com/in/geoffreymtsmith" target="_blank" class="linkedin-button">
+                    <img src="Buttons/linkedin.png" alt="LinkedIn Profile">
+                </a>
+            </div>
+        </footer>
     </div>
-    <div class="tool-navigation"></div>
-    <main id="tool-content"></main>
+
     <script src="js/utils.js"></script>
     <script src="components/concentrationconverter.js"></script>
     <script src="components/dosecalculator.js"></script>
     <script src="components/efficiencymetrics.js"></script>
     <script src="components/ic50converter.js"></script>
+    <script src="components/nmriumviewer.js"></script>
     <script src="js/full-page.js"></script>
-    <footer>
-        <a href="https://www.linkedin.com/in/geoffreymtsmith" target="_blank" class="linkedin-button">
-            <img src="Buttons/linkedin.png" alt="LinkedIn Profile">
-        </a>
-    </footer>
-    
 </body>
 </html>
