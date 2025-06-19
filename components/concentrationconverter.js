@@ -1,106 +1,114 @@
+/* Concentration Unit Converter – split‑pane UI, dual unit pills, live sync (2025‑05‑17) */
+
 function initConcentrationConverter(container) {
     container.innerHTML = `
-        <h2>Concentration Unit Converter</h2>
-        <p>Convert between different concentration units using molecular weight.</p>
-        <div class="input-group">
-            <label for="mw">Molecular Weight (g/mol)</label>
-            <input type="number" id="mw" step="any" required placeholder="Enter MW">
-        </div>
-        <div class="converter-layout">
+      <div class="tool-section split-pane" id="conc-pane">
+        <div class="inputs-pane">
+          <h3>Concentration Unit Converter</h3>
+          <p class="description">Convert between mass and molar concentration units using molecular weight.</p>
+  
+          <!-- MW row -->
+          <div class="input-group">
+            <label for="mw-val">Molecular Weight (g/mol)</label>
+            <input id="mw-val" type="number" step="0.01" placeholder="Enter MW" />
+          </div>
+  
+          <!-- Concentration row → arrow → output unit pill -->
+          <div class="converter-layout pill-layout" id="conc-row">
             <div class="input-group">
-                <label for="inputConc">Input Concentration</label>
-                <div class="input-with-select">
-                    <input type="number" id="inputConc" step="any" placeholder="Enter value">
-                    <select id="inputUnit">
-                        <option value="M">M</option>
-                        <option value="mM">mM</option>
-                        <option value="µM">µM</option>
-                        <option value="nM" selected>nM</option>
-                        <option value="mg/mL">mg/mL</option>
-                        <option value="µg/mL">µg/mL</option>
-                        <option value="ng/mL">ng/mL</option>
-                    </select>
+              <label for="conc-val">Input Concentration</label>
+              <div class="input-with-select pill-mode">
+                <input id="conc-val" type="number" step="0.0001" placeholder="Enter value" />
+                <button id="in-pill" class="unit-pill" aria-haspopup="true" aria-expanded="false" data-unit="nM">nM ▼</button>
+                <div id="in-pop" class="unit-popover" role="menu" hidden>
+                  <button data-unit="nM">nM</button>
+                  <button data-unit="µM">µM</button>
+                  <button data-unit="mM">mM</button>
+                  <button data-unit="ng/mL">ng/mL</button>
+                  <button data-unit="mg/mL">mg/mL</button>
                 </div>
+              </div>
             </div>
+  
+            <span class="operator">→</span>
+  
             <div class="input-group">
-                <label for="outputUnit">Output Unit</label>
-                <select id="outputUnit">
-                    <option value="M">M</option>
-                    <option value="mM">mM</option>
-                    <option value="µM">µM</option>
-                    <option value="nM">nM</option>
-                    <option value="mg/mL">mg/mL</option>
-                    <option value="µg/mL">µg/mL</option>
-                    <option value="ng/mL" selected>ng/mL</option>
-                </select>
+              <label for="out-pill">Output Unit</label>
+              <button id="out-pill" class="unit-pill" aria-haspopup="true" aria-expanded="false" data-unit="ng/mL">ng/mL ▼</button>
+              <div id="out-pop" class="unit-popover" role="menu" hidden>
+                <button data-unit="nM">nM</button>
+                <button data-unit="µM">µM</button>
+                <button data-unit="mM">mM</button>
+                <button data-unit="ng/mL">ng/mL</button>
+                <button data-unit="mg/mL">mg/mL</button>
+              </div>
             </div>
+          </div>
         </div>
-        <button id="convertConc">Convert</button>
-        <div id="concResult" class="result-box"></div>
-    `;
-
-    const mwInput = container.querySelector('#mw');
-    const inputConcInput = container.querySelector('#inputConc');
-    const inputUnitSelect = container.querySelector('#inputUnit');
-    const outputUnitSelect = container.querySelector('#outputUnit');
-    const convertButton = container.querySelector('#convertConc');
-    const resultBox = container.querySelector('#concResult');
-
-    convertButton.addEventListener('click', performConversion);
-
-    function performConversion() {
-        const mw = parseFloat(mwInput.value);
-        const inputConc = parseFloat(inputConcInput.value);
-        const inputUnit = inputUnitSelect.value;
-        const outputUnit = outputUnitSelect.value;
-
-        if (isNaN(mw) || mw <= 0) {
-            resultBox.textContent = 'Please enter a valid Molecular Weight.';
-            return;
-        }
-
-        if (isNaN(inputConc) || inputConc < 0) {
-            resultBox.textContent = 'Please enter a valid concentration value.';
-            return;
-        }
-
-        let molarConc = convertToMolar(inputConc, inputUnit, mw);
-        let outputConc = convertFromMolar(molarConc, outputUnit, mw);
-
-        resultBox.textContent = `${inputConc} ${inputUnit} = ${formatOutput(outputConc)} ${outputUnit}`;
+  
+        <!-- results side -->
+        <aside class="results-pane">
+          <div class="metric-card"><h3 id="out-unit-label">ng/mL</h3><p class="value" id="result-conc">–</p></div>
+        </aside>
+      </div>`;
+  
+    /* util shortcut */
+    const $=s=>container.querySelector(s);
+    const mwInput=$('#mw-val');
+    const concInput=$('#conc-val');
+    const inPill=$('#in-pill');
+    const outPill=$('#out-pill');
+    const inPop=$('#in-pop');
+    const outPop=$('#out-pop');
+    const res=$('#result-conc');
+    const resLabel=$('#out-unit-label');
+  
+    /* conversion maps */
+    const toMolar={ // multiplier to M
+      'nM':v=>v*1e-9,
+      'µM':v=>v*1e-6,
+      'mM':v=>v*1e-3,
+      'ng/mL':(v,mw)=>v*1e-9/mw, // (ng/mL → g/L) / MW
+      'mg/mL':(v,mw)=>v*1e-3/mw
+    };
+    const fromMolar={ // convert M to unit
+      'nM':m=>m*1e9,
+      'µM':m=>m*1e6,
+      'mM':m=>m*1e3,
+      'ng/mL':(m,mw)=>m*mw*1e9,
+      'mg/mL':(m,mw)=>m*mw*1e3
+    };
+  
+    function calc(){
+      const mw=parseFloat(mwInput.value);
+      const val=parseFloat(concInput.value);
+      const inUnit=inPill.dataset.unit;
+      const outUnit=outPill.dataset.unit;
+  
+      if(isNaN(val)|| (isMassUnit(inUnit)||isMassUnit(outUnit)?isNaN(mw)||mw<=0:false)){
+        res.textContent='–';
+        return;
+      }
+      // to molar
+      const molar=toMolar[inUnit](val,mw);
+      const out=fromMolar[outUnit](molar,mw);
+      res.textContent=parseFloat(out.toPrecision(6));
+      resLabel.textContent=outUnit;
     }
-
-    function convertToMolar(value, unit, mw) {
-        switch (unit) {
-            case 'M': return value;
-            case 'mM': return value * 1e-3;
-            case 'µM': return value * 1e-6;
-            case 'nM': return value * 1e-9;
-            case 'mg/mL': return value / mw;
-            case 'µg/mL': return value * 1e-3 / mw;
-            case 'ng/mL': return value * 1e-6 / mw;
-        }
-    }
-
-    function convertFromMolar(molarValue, unit, mw) {
-        switch (unit) {
-            case 'M': return molarValue;
-            case 'mM': return molarValue * 1e3;
-            case 'µM': return molarValue * 1e6;
-            case 'nM': return molarValue * 1e9;
-            case 'mg/mL': return molarValue * mw;
-            case 'µg/mL': return molarValue * mw * 1e3;
-            case 'ng/mL': return molarValue * mw * 1e6;
-        }
-    }
-
-    function formatOutput(value) {
-        if (value >= 1e5 || value <= 1e-5) {
-            return value.toExponential(4);
-        }
-        return value.toPrecision(5);
-    }
-}
-
-// Make it available globally
-window.initConcentrationConverter = initConcentrationConverter;
+  
+    const isMassUnit=u=>u.includes('/');
+  
+    /* pill popover wiring (reuse helper) */
+    function pillToggle(pill,pop){const open=pill.getAttribute('aria-expanded')==='true';pill.setAttribute('aria-expanded',!open);pop.hidden=open;}
+    inPill.addEventListener('click',()=>pillToggle(inPill,inPop));
+    outPill.addEventListener('click',()=>pillToggle(outPill,outPop));
+    function pickUnit(e,pill,pop){if(!e.target.dataset.unit) return; pill.dataset.unit=e.target.dataset.unit; pill.textContent=`${e.target.dataset.unit} ▼`; pill.setAttribute('aria-expanded','false'); pop.hidden=true; calc();}
+    inPop.addEventListener('click',e=>pickUnit(e,inPill,inPop));
+    outPop.addEventListener('click',e=>pickUnit(e,outPill,outPop));
+    document.addEventListener('click',e=>{[inPop,outPop].forEach(pop=>{const pill=pop.previousElementSibling; if(!pop.hidden&&!pop.contains(e.target)&&e.target!==pill){pop.hidden=true;pill.setAttribute('aria-expanded','false');}})});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){[inPop,outPop].forEach(pop=>{pop.hidden=true; pop.previousElementSibling.setAttribute('aria-expanded','false');});}});
+  
+    /* live calc events */
+    [mwInput,concInput].forEach(el=>el.addEventListener('input',calc));
+  }
+  
