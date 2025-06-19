@@ -151,6 +151,10 @@
 }
 .unit-popover button:hover,
 .unit-popover button:focus { background: var(--button-bg-hov); }
+.unit-popover button { color: var(--text-color); }
+.unit-popover button:hover,
+.unit-popover button:focus { background: var(--button-bg-hov); color: var(--text-color); }
+
 
 
   
