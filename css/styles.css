@@ -1,492 +1,211 @@
 /* ==================================================================
-   DrugDiscoveryApps – Modern Responsive Layout (2024)
+   DrugDiscoveryApps – Complete Pro Layout Stylesheet (2025‑05‑16)
    ------------------------------------------------------------------
-   • Modern responsive layout with CSS Grid and Flexbox
-   • Fluid typography and spacing
-   • Improved mobile experience
-   • Better component organization
+   Added split‑pane support for calculators with live results.
    ==================================================================*/
 
-:root {
-  /* --- colour palette --- */
-  --primary-color:      #4A90E2;
-  --secondary-color:    #50E3C2;
-  --accent-red:         #E74C3C;
-  --text-color:         #2C3E50;
-  --background-color:   #F7F9FC;
-  --card-color:         #FFFFFF;
-  --border-color:       #D6D9DD;
-  --hover-color:        #5DADE2;
-  --button-bg:          #E6EEF5;
-  --button-bg-hov:      #D0D9E2;
-  --error-bg:           #FDEDEC;
-  --error-border:       #F5B7B1;
+   :root {
+    /* --- colour palette --- */
+    --primary-color:      #4A90E2;
+    --secondary-color:    #50E3C2;
+    --accent-red:         #E74C3C;
+    --text-color:         #2C3E50;
+    --background-color:   #F7F9FC;
+    --card-color:         #FFFFFF;
+    --border-color:       #D6D9DD;
+    --hover-color:        #5DADE2;
+    --button-bg:          #E6EEF5;
+    --button-bg-hov:      #D0D9E2;
+    --error-bg:           #FDEDEC;
+    --error-border:       #F5B7B1;
+  
+    /* --- spacing scale --- */
+    --space-1: clamp(4px, 0.25vw, 6px);
+    --space-2: clamp(8px, 0.5vw, 12px);
+    --space-3: clamp(12px, 0.75vw, 16px);
+    --space-4: clamp(16px, 1vw, 24px);
+    --space-5: clamp(24px, 1.5vw, 32px);
+    --space-6: clamp(32px, 2vw, 48px);
+  
+    /* --- layout dims --- */
+    --header-h: 56px;
+    --nav-h:    44px;
+    --max-width: 1440px;
+    --content-padding: var(--space-4);
+  }
+  
+  /* --------------------------------------------------
+     Reset & base
+     --------------------------------------------------*/
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;width:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;color:var(--text-color);background:var(--background-color);-webkit-font-smoothing:antialiased}
+  
+  body.full-page{display:flex;flex-direction:column;min-height:100vh}
+  
+  /* --------------------------------------------------
+     Header
+     --------------------------------------------------*/
+  header{height:var(--header-h);padding:0 var(--content-padding);display:flex;align-items:center;background:var(--card-color);border-bottom:1px solid var(--border-color);position:sticky;top:0;z-index:1000;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  h1{font-size:clamp(1.2rem,2vw,1.5rem);font-weight:600;margin:0}
+  
+  /* --------------------------------------------------
+     Navigation rows
+     --------------------------------------------------*/
+  .category-navigation, .tool-navigation {
+    list-style: none;            /* remove default bullets */
+  }
+  .category-navigation li, .tool-navigation li { list-style: none; }
+  
+     --------------------------------------------------*/
+  .category-navigation,.tool-navigation{height:var(--nav-h);display:flex;align-items:center;gap:var(--space-2);padding:0 var(--content-padding);background:var(--card-color);border-bottom:1px solid var(--border-color);position:sticky;z-index:900;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
+  .category-navigation::-webkit-scrollbar,.tool-navigation::-webkit-scrollbar{display:none}
+  .category-navigation{top:var(--header-h)}
+  .tool-navigation{top:calc(var(--header-h)+var(--nav-h))}
+  
+  .category-button,.tool-button{flex:0 0 auto;padding:var(--space-2) var(--space-4);border:none;border-radius:6px;background:var(--button-bg);cursor:pointer;font-size:0.9375rem;transition:background .25s;white-space:nowrap}
+  .category-button:hover,.tool-button:hover{background:var(--button-bg-hov);transform:translateY(-1px)}
+  .category-button.active[data-category="medchem"],.tool-button.active{background:var(--primary-color);color:#fff;font-weight:600}
+  .category-button.active[data-category="pk"]{background:var(--accent-red);color:#fff}
+  .category-button.active[data-category="molecular_drawer"]{background:var(--secondary-color);color:#fff}
+  .category-button.active[data-category="spectroscopy"]{background:var(--hover-color);color:#fff}
+  
+  /* --------------------------------------------------
+     Main content container
+     --------------------------------------------------*/
+  main,#tool-content{flex:1 1 auto;width:100%;max-width:var(--max-width);margin:0 auto;padding:calc(var(--space-6)+var(--header-h)+var(--nav-h)*2) var(--content-padding) var(--space-6);box-sizing:border-box}
+  body.spectroscopy-fullwidth main,body.spectroscopy-fullwidth #tool-content{max-width:none;padding:0}
+  
+  /* --------------------------------------------------
+     Tool section card
+     --------------------------------------------------*/
+  .tool-section{background:var(--card-color);border-radius:10px;padding:var(--space-5);margin-bottom:var(--space-5);box-shadow:0 2px 6px rgba(0,0,0,.06)}
+  
+  /* --------------------------------------------------
+     Split‑pane layout for calculators
+     --------------------------------------------------*/
+  .split-pane{display:grid;grid-template-columns:1fr 360px;gap:var(--space-5)}
+  .inputs-pane{display:flex;flex-direction:column;gap:var(--space-4)}
+  .results-pane{position:sticky;top:calc(var(--header-h)+var(--nav-h)*2+var(--space-4));display:flex;flex-direction:column;gap:var(--space-4)}
+  .metric-card{background:var(--button-bg);border:1px solid var(--border-color);border-radius:8px;padding:var(--space-4);text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .metric-card h3{margin-bottom:var(--space-2);font-size:1rem;font-weight:600}
+  .metric-card .value{font-size:1.75rem;font-weight:700;color:var(--primary-color)}
+  
+  @media(max-width:992px){.split-pane{grid-template-columns:1fr}.results-pane{position:static}}
+  
+  /* --------------------------------------------------
+     Form elements
+     --------------------------------------------------*/
+  .input-group{margin-bottom:var(--space-3)}
+  label{display:block;margin-bottom:var(--space-1);font-weight:600}
+  input[type="number"],input[type="text"],select{width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border-color);border-radius:6px;background:var(--card-color);font-size:15px;box-sizing:border-box}
+  
+  button{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-1);width:100%;padding:var(--space-3) var(--space-4);border:none;border-radius:6px;background:var(--primary-color);color:#fff;font-weight:600;cursor:pointer;transition:background .25s,transform .15s}
+  button:hover{background:var(--secondary-color);transform:translateY(-2px)}
+  button:active{transform:none}
+  
+  .result-box{margin-top:var(--space-3);padding:var(--space-3);border:1px solid var(--primary-color);border-radius:6px;background:#e6f3ff;font-weight:500;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
 
-  /* --- spacing scale --- */
-  --space-1: clamp(4px, 0.25vw, 6px);
-  --space-2: clamp(8px, 0.5vw, 12px);
-  --space-3: clamp(12px, 0.75vw, 16px);
-  --space-4: clamp(16px, 1vw, 24px);
-  --space-5: clamp(24px, 1.5vw, 32px);
-  --space-6: clamp(32px, 2vw, 48px);
-
-  /* --- layout dimensions --- */
-  --header-h: 60px;
-  --nav-h: 48px;
-  --max-width: 1440px;
-  --content-padding: var(--space-4);
+  /* ─── IC50 Converter inline-unit pill ─── */
+.input-with-select.pill-mode { position: relative; display: flex; align-items: stretch; }
+.input-with-select.pill-mode input {
+  flex: 1 1 200px;
+  border-radius: 6px 0 0 6px;
+  min-width: 0;
 }
-
-/* --------------------------------------------------
-   Reset & Base Styles
-   --------------------------------------------------*/
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html, body {
-  height: 100%;
-  width: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--text-color);
-  background: var(--background-color);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* --------------------------------------------------
-   Layout Container
-   --------------------------------------------------*/
-.app-container {
-  min-height: 100vh;
-  display: grid;
-  grid-template-rows: auto auto 1fr auto;
-  grid-template-areas: 
-    "header"
-    "nav"
-    "main"
-    "footer";
-}
-
-/* --------------------------------------------------
-   Header
-   --------------------------------------------------*/
-.app-header {
-  grid-area: header;
-  background: var(--card-color);
-  border-bottom: 1px solid var(--border-color);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  height: var(--header-h);
-}
-
-.header-content {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0 var(--content-padding);
-  height: 100%;
-  display: flex;
-  align-items: center;
-}
-
-h1 {
-  font-size: clamp(1.2rem, 2vw, 1.5rem);
-  font-weight: 600;
-}
-
-/* --------------------------------------------------
-   Navigation
-   --------------------------------------------------*/
-.app-navigation {
-  grid-area: nav;
-  background: var(--card-color);
-  border-bottom: 1px solid var(--border-color);
-  position: sticky;
-  top: var(--header-h);
-  z-index: 900;
-  width: 100%;
-  padding: var(--space-4) 0;
-}
-
-.nav-content {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0 var(--content-padding);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.category-navigation,
-.tool-navigation {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  height: var(--nav-h);
-  display: flex;
-  align-items: center;
-  gap: 1px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  -webkit-overflow-scrolling: touch;
+.unit-pill {
+  flex: 0 0 72px;
+  border: 1px solid var(--border-color);
+  border-left: none;
+  border-radius: 0 6px 6px 0;
   background: var(--button-bg);
-  border-radius: 8px;
-  padding: 2px;
-}
-
-.tool-navigation {
-  background: var(--background-color);
-  border: 1px solid var(--border-color);
-}
-
-.category-navigation::-webkit-scrollbar,
-.tool-navigation::-webkit-scrollbar {
-  display: none;
-}
-
-.category-navigation li,
-.tool-navigation li {
-  margin: 0;
-  padding: 0;
-  flex: 1;
-  min-width: fit-content;
-}
-
-.category-button,
-.tool-button {
-  appearance: none;
-  -webkit-appearance: none;
-  display: inline-flex;
+  cursor: pointer;
+  padding: var(--space-2) var(--space-2);
+  font-size: 0.9rem;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: calc(var(--nav-h) - 8px);
-  padding: 0 var(--space-4);
-  border: none;
+}
+.unit-pill:hover { background: var(--button-bg-hov); }
+/* pill-only wrapper */
+.pill-only { position: relative; display: inline-block; }
+
+/* make lone pill fully rounded */
+.pill-only .unit-pill {
+  border-radius: 6px;              /* all four corners */
+  border-left: 1px solid var(--border-color); /* restore left border */
+}
+
+
+
+.unit-popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: var(--card-color);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
-  background: transparent;
-  color: var(--text-color);
-  font-size: 0.9375rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  text-decoration: none;
-  margin: 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.category-button::before,
-.tool-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--primary-color);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: 0;
-}
-
-.category-button > span,
-.tool-button > span {
-  position: relative;
-  z-index: 1;
-}
-
-.category-button:hover,
-.tool-button:hover {
-  background: var(--button-bg-hov);
-  transform: translateY(-1px);
-}
-
-/* Active states with unique colors per category */
-.category-button.active {
-  background: var(--card-color);
-  color: var(--primary-color);
-  font-weight: 600;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.category-button.active[data-category="medchem"] { 
-  background: var(--card-color);
-  color: var(--primary-color);
-}
-
-.category-button.active[data-category="pk"] { 
-  background: var(--card-color);
-  color: var(--accent-red);
-}
-
-.category-button.active[data-category="molecular_drawer"] { 
-  background: var(--card-color);
-  color: var(--secondary-color);
-}
-
-.category-button.active[data-category="spectroscopy"] { 
-  background: var(--card-color);
-  color: var(--hover-color);
-}
-
-.tool-button.active {
-  background: var(--card-color);
-  color: var(--primary-color);
-  font-weight: 600;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
-
-/* Hover indicators */
-.category-button:hover::before,
-.tool-button:hover::before {
-  opacity: 0.1;
-}
-
-/* Add subtle separators */
-.category-navigation li:not(:last-child)::after,
-.tool-navigation li:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 20%;
-  height: 60%;
-  width: 1px;
-  background: var(--border-color);
-  opacity: 0.5;
-}
-
-/* --------------------------------------------------
-   Main Content
-   --------------------------------------------------*/
-.main-content {
-  grid-area: main;
-  width: 100%;
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: var(--space-6) var(--content-padding);
-}
-
-/* Full-width override for Spectroscopy */
-body.spectroscopy-fullwidth .main-content {
-  max-width: none;
-  padding: 0;
-}
-
-/* --------------------------------------------------
-   Tool Sections
-   --------------------------------------------------*/
-.tool-section {
-  background: var(--card-color);
-  border-radius: 10px;
-  padding: var(--space-5);
-  margin-bottom: var(--space-5);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-}
-
-/* --------------------------------------------------
-   Footer
-   --------------------------------------------------*/
-.app-footer {
-  grid-area: footer;
-  background: var(--card-color);
-  border-top: 1px solid var(--border-color);
-  padding: var(--space-5) 0;
-}
-
-.footer-content {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0 var(--content-padding);
-  display: flex;
-  justify-content: center;
-}
-
-.linkedin-button {
-  transition: transform 0.2s ease;
-  display: inline-block;
-}
-
-.linkedin-button:hover {
-  transform: scale(1.05);
-}
-
-.linkedin-button img {
-  max-width: 200px;
-  height: auto;
-  display: block;
-}
-
-/* --------------------------------------------------
-   NMRium Viewer Styles
-   --------------------------------------------------*/
-.nmrium-container {
-  height: calc(100vh - var(--header-h) - var(--nav-h)*2);
+  box-shadow: 0 2px 6px rgba(0,0,0,.12);
   display: flex;
   flex-direction: column;
-  padding: var(--space-4);
-  margin: 0;
-  border-radius: 0;
+  z-index: 200;
 }
-
-.nmrium-wrapper {
-  flex: 1;
-  min-height: 0;
-  position: relative;
-  margin-top: var(--space-3);
-}
-
-.nmrium-wrapper iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-/* --------------------------------------------------
-   Responsive Design
-   --------------------------------------------------*/
-@media (max-width: 768px) {
-  :root {
-    --content-padding: var(--space-3);
-  }
-
-  .category-navigation,
-  .tool-navigation {
-    justify-content: flex-start;
-    padding: 0 var(--space-2);
-  }
-
-  .tool-section {
-    padding: var(--space-4);
-    margin-bottom: var(--space-4);
-  }
-}
-
-@media (max-width: 480px) {
-  :root {
-    --header-h: 50px;
-    --nav-h: 44px;
-  }
-
-  .category-button,
-  .tool-button {
-    padding: var(--space-2) var(--space-3);
-    font-size: 0.875rem;
-  }
-}
-
-/* Maintain proper spacing for form elements */
-.input-group { margin-bottom: var(--space-3); }
-label        { display: block; margin-bottom: var(--space-1); font-weight: 600; }
-
-input[type="number"],
-input[type="text"],
-select {
-  width: 100%;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background: var(--card-color);
-  font-size: 15px;
-  box-sizing: border-box;
-}
-
-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-1);
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
+.unit-popover[hidden] { display: none; }
+.unit-popover button {
+  background: none;
   border: none;
-  border-radius: 6px;
-  background: var(--primary-color);
-  color: #fff;
-  font-weight: 600;
+  padding: var(--space-2) var(--space-4);
+  text-align: left;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: background .25s, transform .15s;
+  white-space: nowrap;
 }
-button:hover  { background: var(--secondary-color); transform: translateY(-2px); }
-button:active { transform: none; }
+.unit-popover button:hover,
+.unit-popover button:focus { background: var(--button-bg-hov); }
+.unit-popover button { color: var(--text-color); }
+.unit-popover button:hover,
+.unit-popover button:focus { background: var(--button-bg-hov); color: var(--text-color); }
 
-/* Result boxes */
-.result-box {
-  margin-top: var(--space-3);
-  padding: var(--space-3);
-  border: 1px solid var(--primary-color);
-  border-radius: 6px;
-  background: #e6f3ff;
-  font-weight: 500;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,.05);
-}
 
-/* --------------------------------------------------
-   Converter layout helper
-   --------------------------------------------------*/
-.converter-layout {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-.converter-layout .input-group { flex: 1; margin: 0; }
-.converter-layout .operator    { font-size: 18px; color: var(--secondary-color); }
 
-/* --------------------------------------------------
-   Accordion component
-   --------------------------------------------------*/
-.accordion-item    { border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: var(--space-3); }
-.accordion-header  { background: var(--primary-color); color: #fff; padding: var(--space-3); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-.accordion-header:hover { background: var(--hover-color); }
-.accordion-content { padding: var(--space-3); background: var(--card-color); }
-
-/* --------------------------------------------------
-   Molecular drawer specific
-   --------------------------------------------------*/
-.drawer-selection {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-4);
-  margin-bottom: var(--space-4);
-}
-.drawer-selection button { width: auto; flex: 0 0 auto; background: var(--primary-color); color: #fff; border-radius: 6px; padding: var(--space-2) var(--space-4); }
-.drawer-selection button:hover { background: var(--hover-color); }
-
-#drawer-container { min-height: 600px; }
-#drawer-container > * { width: 100%; max-width: 900px; margin: 0 auto; display: block; }
-
-/* --------------------------------------------------
-   Error banner
-   --------------------------------------------------*/
-#error-log {
-  color: var(--accent-red);
-  background: var(--error-bg);
-  border: 1px solid var(--error-border);
-  padding: var(--space-3);
-  margin-top: var(--space-5);
-}
-
-/* --------------------------------------------------
-   Scrollbars – WebKit & Firefox thin
-   --------------------------------------------------*/
-main::-webkit-scrollbar,
-#tool-content::-webkit-scrollbar { width: 8px; }
-main::-webkit-scrollbar-track,
-#tool-content::-webkit-scrollbar-track { background: transparent; }
-main::-webkit-scrollbar-thumb,
-#tool-content::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 4px; }
-
-/* --------------------------------------------------
-   Utility classes
-   --------------------------------------------------*/
-.hidden { display: none !important; }
+  
+  /* --------------------------------------------------
+     Converter & accordion helpers
+     --------------------------------------------------*/
+  .converter-layout{display:flex;align-items:center;gap:var(--space-3)}
+  .converter-layout .input-group{flex:1;margin:0}
+  .converter-layout .operator{font-size:18px;color:var(--secondary-color)}
+  
+  .accordion-item{border:1px solid var(--border-color);border-radius:8px;overflow:hidden;margin-bottom:var(--space-3)}
+  .accordion-header{background:var(--primary-color);color:#fff;padding:var(--space-3);cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+  .accordion-header:hover{background:var(--hover-color)}
+  .accordion-item .accordion-content{display:none;padding:var(--space-3);background:var(--card-color)}
+  .accordion-item.open .accordion-content{display:block}
+  
+  /* --------------------------------------------------
+     Drawer specific & misc (unchanged)  
+     --------------------------------------------------*/
+  .drawer-selection{display:flex;justify-content:center;gap:var(--space-4);margin-bottom:var(--space-4)}
+  .drawer-selection button{width:auto;flex:0 0 auto;background:var(--primary-color);color:#fff;border-radius:6px;padding:var(--space-2) var(--space-4)}
+  .drawer-selection button:hover{background:var(--hover-color)}
+  #drawer-container{min-height:600px}
+  #drawer-container>*{width:100%;max-width:900px;margin:0 auto;display:block}
+  
+  #error-log{color:var(--accent-red);background:var(--error-bg);border:1px solid var(--error-border);padding:var(--space-3);margin-top:var(--space-5)}
+  
+  footer{margin-top:auto;padding:var(--space-6) 0;background:var(--card-color);border-top:1px solid var(--border-color);display:flex;justify-content:center}
+  .linkedin-button{transition:transform .2s;display:inline-block}
+  .linkedin-button:hover{transform:scale(1.08)}
+  .linkedin-button img{max-width:200px;height:auto;display:block}
+  
+  main::-webkit-scrollbar,#tool-content::-webkit-scrollbar{width:8px}
+  main::-webkit-scrollbar-track,#tool-content::-webkit-scrollbar-track{background:transparent}
+  main::-webkit-scrollbar-thumb,#tool-content::-webkit-scrollbar-thumb{background:var(--primary-color);border-radius:4px}
+  
+  .hidden{display:none!important}
+  
+  /* --------------------------------------------------
+     Responsive tweaks
+     --------------------------------------------------*/
+  @media(max-width:768px){.category-navigation,.tool-navigation{justify-content:flex-start;padding:0 var(--space-2)}.tool-section{padding:var(--space-4);margin-bottom:var(--space-4)}}
+  @media(max-width:480px){:root{--header-h:50px;--nav-h:44px}.category-button,.tool-button{padding:var(--space-2) var(--space-3);font-size:0.875rem}}
+  

@@ -1,132 +1,124 @@
+/* In‑Vivo Dose Calculator – split‑pane UI, live results (2025‑05‑17)
+   ------------------------------------------------------------------
+   ▸ Replaces button‑based form with instant calculations
+   ▸ Handles subject weight map + custom weight validation
+   ▸ Shows two metric cards: total compound (mg) and per‑subject per‑day (mg)
+*/
+
 function initDoseCalculator(container) {
     container.innerHTML = `
-        <h2>In-Vivo Dose Calculator</h2>
-        <p>Calculate the total amount of compound needed for in-vivo studies.</p>
-        <div class="input-group">
-            <label for="animalType">Subject Type</label>
-            <select id="animalType">
-                <option value="mouse">Mouse (20g)</option>
-                <option value="rat">Rat (250g)</option>
-                <option value="dog">Dog (12kg)</option>
-                <option value="monkey">Monkey (5kg)</option>
-                <option value="human">Human (85kg)</option>
-                <option value="custom">Custom</option>
+      <div class="tool-section split-pane" id="dose-pane">
+        <div class="inputs-pane">
+          <h3>In‑Vivo Dose Calculator</h3>
+          <p class="description">Calculate the total amount of compound required for an in‑vivo study.</p>
+  
+          <!-- Subject selector -->
+          <div class="input-group">
+            <label for="subject-type">Subject Type</label>
+            <select id="subject-type">
+              <option value="mouse">Mouse (20 g)</option>
+              <option value="rat">Rat (250 g)</option>
+              <option value="dog">Dog (12 kg)</option>
+              <option value="monkey">Monkey (5 kg)</option>
+              <option value="human">Human (85 kg)</option>
+              <option value="custom">Custom</option>
             </select>
-        </div>
-        <div id="customWeightGroup" class="input-group" style="display: none;">
-            <label for="customWeight">Custom Weight (kg)</label>
-            <input type="number" id="customWeight" step="0.001" placeholder="Enter weight in kg">
-        </div>
-        <div class="input-group">
-            <label for="animalCount">Number of Subjects</label>
-            <input type="number" id="animalCount" min="1" placeholder="Enter number of subjects">
-        </div>
-        <div class="input-group">
-            <label for="doseType">Dose Type</label>
-            <select id="doseType">
-                <option value="simple">Simple (mg/kg)</option>
-                <option value="advanced">Advanced (IC50/IC90 coverage)</option>
-            </select>
-        </div>
-        <div id="simpleDoseGroup" class="input-group">
-            <label for="simpleDose">Dose (mg/kg)</label>
-            <input type="number" id="simpleDose" step="any" placeholder="Enter dose">
-        </div>
-        <div id="advancedDoseGroup" style="display: none;">
+          </div>
+          <div class="input-group" id="custom-weight-row" hidden>
+            <label for="custom-weight">Custom Weight (kg)</label>
+            <input id="custom-weight" type="number" step="0.001" placeholder="e.g. 2.5" />
+          </div>
+  
+          <!-- Study design -->
+          <div class="input-group">
+            <label for="subject-count">Number of Subjects</label>
+            <input id="subject-count" type="number" min="1" step="1" placeholder="Enter number" />
+          </div>
+  
+          <div class="input-group">
+            <label for="dose-value">Dose (mg/kg)</label>
+            <input id="dose-value" type="number" step="0.01" placeholder="Enter dose" />
+          </div>
+  
+          <div class="input-group pill-layout" id="schedule-row">
             <div class="input-group">
-                <label for="coverageType">Coverage Type</label>
-                <select id="coverageType">
-                    <option value="IC50">IC50</option>
-                    <option value="IC90">IC90</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="foldCoverage">Fold Coverage</label>
-                <input type="number" id="foldCoverage" step="any" placeholder="Enter fold coverage">
-            </div>
-            <div class="input-group">
-                <label for="concentration">Concentration (ng/mL)</label>
-                <input type="number" id="concentration" step="any" placeholder="Enter concentration">
-            </div>
-            <div class="input-group">
-                <label for="molecularWeight">Molecular Weight (g/mol)</label>
-                <input type="number" id="molecularWeight" step="any" placeholder="Enter molecular weight">
-            </div>
-        </div>
-        <div class="input-group">
-            <label for="dosingSchedule">Dosing Schedule</label>
-            <select id="dosingSchedule">
+              <label for="schedule">Dosing Schedule</label>
+              <select id="schedule">
                 <option value="1">Once daily</option>
                 <option value="2">Twice daily</option>
                 <option value="3">Three times daily</option>
-            </select>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="study-days">Number of Days</label>
+              <input id="study-days" type="number" min="1" value="1" />
+            </div>
+          </div>
         </div>
-        <div class="input-group">
-            <label for="studyDays">Number of Days</label>
-            <input type="number" id="studyDays" min="1" value="1" placeholder="Enter study duration">
-        </div>
-        <button id="calculateDose">Calculate Dose</button>
-        <div id="doseResult" class="result-box"></div>
-    `;
-
-    const animalTypeSelect = container.querySelector('#animalType');
-    const customWeightGroup = container.querySelector('#customWeightGroup');
-    const doseTypeSelect = container.querySelector('#doseType');
-    const simpleDoseGroup = container.querySelector('#simpleDoseGroup');
-    const advancedDoseGroup = container.querySelector('#advancedDoseGroup');
-    const calculateButton = container.querySelector('#calculateDose');
-    const resultBox = container.querySelector('#doseResult');
-
-    animalTypeSelect.addEventListener('change', () => {
-        customWeightGroup.style.display = animalTypeSelect.value === 'custom' ? 'block' : 'none';
+  
+        <!-- Results side -->
+        <aside class="results-pane">
+          <div class="metric-card"><h3>Total Compound (mg)</h3><p class="value" id="total-mg">–</p></div>
+          <div class="metric-card"><h3>Per Subject · Day (mg)</h3><p class="value" id="per-mg">–</p></div>
+        </aside>
+      </div>`;
+  
+    /* ---------- element refs ---------- */
+    const $ = q => container.querySelector(q);
+    const selType  = $('#subject-type');
+    const customRow= $('#custom-weight-row');
+    const customWt = $('#custom-weight');
+    const nSubj    = $('#subject-count');
+    const doseVal  = $('#dose-value');
+    const schedSel = $('#schedule');
+    const daysInp  = $('#study-days');
+    const outTot   = $('#total-mg');
+    const outPer   = $('#per-mg');
+  
+    /* subject weight map (kg) */
+    const weights = { mouse:0.02, rat:0.25, dog:12, monkey:5, human:85 };
+  
+    /* ---------- UI interactivity ---------- */
+    selType.addEventListener('change', () => {
+      customRow.hidden = selType.value !== 'custom';
+      calc();
     });
-
-    doseTypeSelect.addEventListener('change', () => {
-        simpleDoseGroup.style.display = doseTypeSelect.value === 'simple' ? 'block' : 'none';
-        advancedDoseGroup.style.display = doseTypeSelect.value === 'advanced' ? 'block' : 'none';
-    });
-
-    calculateButton.addEventListener('click', calculateDose);
-
-    function calculateDose() {
-        const animalType = animalTypeSelect.value;
-        const animalCount = parseInt(container.querySelector('#animalCount').value);
-        const doseType = doseTypeSelect.value;
-        const dosingSchedule = parseInt(container.querySelector('#dosingSchedule').value);
-        const studyDays = parseInt(container.querySelector('#studyDays').value);
-
-        let weight, dose;
-
-        // Determine weight
-        switch (animalType) {
-            case 'mouse': weight = 0.02; break;
-            case 'rat': weight = 0.25; break;
-            case 'dog': weight = 12; break;
-            case 'monkey': weight = 5; break;
-            case 'human': weight = 85; break;
-            case 'custom': weight = parseFloat(container.querySelector('#customWeight').value); break;
-        }
-
-        // Calculate dose
-        if (doseType === 'simple') {
-            dose = parseFloat(container.querySelector('#simpleDose').value);
-        } else {
-            const coverageType = container.querySelector('#coverageType').value;
-            const foldCoverage = parseFloat(container.querySelector('#foldCoverage').value);
-            const concentration = parseFloat(container.querySelector('#concentration').value);
-            const molecularWeight = parseFloat(container.querySelector('#molecularWeight').value);
-
-            // Advanced dose calculation (this is a simplified example)
-            dose = (concentration * foldCoverage * molecularWeight) / (1e6 * weight);
-        }
-
-        // Calculate total amount
-        const totalAmount = dose * weight * animalCount * dosingSchedule * studyDays;
-
-        // Display result
-        resultBox.textContent = `Total amount needed: ${totalAmount.toFixed(2)} mg`;
+    [customWt,nSubj,doseVal,schedSel,daysInp].forEach(el=>el.addEventListener('input', calc));
+    selType.addEventListener('input', calc);
+  
+    function getWeight() {
+      if (selType.value === 'custom') {
+        const w = parseFloat(customWt.value);
+        return isFinite(w) && w>0 ? w : NaN;
+      }
+      return weights[selType.value];
     }
-}
-
-// Make it available globally
-window.initDoseCalculator = initDoseCalculator;
+  
+    function calc() {
+      /* gather inputs */
+      const weight = getWeight();
+      const count  = parseInt(nSubj.value,10);
+      const dose   = parseFloat(doseVal.value); // mg/kg
+      const freq   = parseInt(schedSel.value,10);
+      const days   = parseInt(daysInp.value,10);
+  
+      const valid = isFinite(weight) && weight>0 && isFinite(count) && count>0 && isFinite(dose) && dose>0 && isFinite(freq) && freq>0 && isFinite(days) && days>0;
+  
+      if (!valid) {
+        outTot.textContent = '–';
+        outPer.textContent = '–';
+        return;
+      }
+  
+      const perSubjectPerDose = weight * dose;          // mg per dose per subject
+      const perSubjectPerDay  = perSubjectPerDose * freq;
+      const total             = perSubjectPerDay * days * count;
+  
+      outPer.textContent = perSubjectPerDay.toFixed(2);
+      outTot.textContent = total.toFixed(2);
+    }
+  }
+  
+  /* expose globally */
+  window.initDoseCalculator = initDoseCalculator;
+  

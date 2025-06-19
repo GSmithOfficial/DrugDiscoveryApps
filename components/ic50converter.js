@@ -1,60 +1,92 @@
+/* IC50 ↔ pIC50 Converter – inline pill, live sync, no convert button (2025‑05‑17) */
+
 function initIC50Converter(container) {
     container.innerHTML = `
-        <h2>IC50 ↔ pIC50 Converter</h2>
-        <p>Convert between IC50 and pIC50 values for enzyme inhibition studies.</p>
-        <div class="converter-layout">
+      <div class="tool-section split-pane" id="ic50-pane">
+        <div class="inputs-pane">
+          <h3>IC50 ↔ pIC50 Converter</h3>
+          <p class="description">Convert between IC50 and pIC50 values for enzyme inhibition studies.</p>
+  
+          <div class="converter-layout pill-layout">
             <div class="input-group">
-                <label for="ic50">IC50</label>
-                <div class="input-with-select">
-                    <input type="number" id="ic50" step="any" placeholder="Enter IC50">
-                    <select id="ic50Unit">
-                        <option value="nM" selected>nM</option>
-                        <option value="µM">µM</option>
-                    </select>
+              <label for="ic50-val">IC50</label>
+              <div class="input-with-select pill-mode">
+                <input id="ic50-val" type="number" step="0.0001" placeholder="Enter IC50" />
+                <button id="unit-pill" class="unit-pill" aria-haspopup="true" aria-expanded="false" data-unit="nM">nM ▼</button>
+                <div id="unit-popover" class="unit-popover" role="menu" aria-label="Select unit">
+                  <button data-unit="nM" role="menuitem">nM</button>
+                  <button data-unit="µM" role="menuitem">µM</button>
+                  <button data-unit="mM" role="menuitem">mM</button>
                 </div>
+              </div>
             </div>
+  
             <span class="operator">↔</span>
+  
             <div class="input-group">
-                <label for="pic50">pIC50</label>
-                <input type="number" id="pic50" step="any" placeholder="Enter pIC50">
+              <label for="pic50-val">pIC50</label>
+              <input id="pic50-val" type="number" step="0.01" placeholder="Enter pIC50" />
             </div>
+          </div>
         </div>
-        <button id="convertIC50">Calculate</button>
-        <div id="ic50Result" class="result-box"></div>
-    `;
-
-    const ic50Input = container.querySelector('#ic50');
-    const ic50UnitSelect = container.querySelector('#ic50Unit');
-    const pic50Input = container.querySelector('#pic50');
-    const convertButton = container.querySelector('#convertIC50');
-    const resultBox = container.querySelector('#ic50Result');
-
-    convertButton.addEventListener('click', performConversion);
-    ic50Input.addEventListener('input', () => pic50Input.value = '');
-    pic50Input.addEventListener('input', () => ic50Input.value = '');
-
-    function performConversion() {
-        if (ic50Input.value && !isNaN(ic50Input.value)) {
-            let ic50 = parseFloat(ic50Input.value);
-            if (ic50UnitSelect.value === 'µM') {
-                ic50 *= 1000; // Convert µM to nM
-            }
-            const pic50 = -Math.log10(ic50 * 1e-9);
-            pic50Input.value = pic50.toFixed(2);
-            resultBox.textContent = `pIC50: ${pic50.toFixed(2)}`;
-        } else if (pic50Input.value && !isNaN(pic50Input.value)) {
-            const pic50 = parseFloat(pic50Input.value);
-            let ic50 = Math.pow(10, -pic50) * 1e9;
-            if (ic50UnitSelect.value === 'µM') {
-                ic50 /= 1000; // Convert nM to µM
-            }
-            ic50Input.value = ic50.toFixed(2);
-            resultBox.textContent = `IC50: ${ic50.toFixed(2)} ${ic50UnitSelect.value}`;
-        } else {
-            resultBox.textContent = 'Please enter a valid value for either IC50 or pIC50.';
-        }
+  
+        <aside class="results-pane">
+          <div class="metric-card"><h3>pIC50</h3><p class="value" id="result-pic50">–</p></div>
+          <div class="metric-card"><h3>IC50 (nM)</h3><p class="value" id="result-ic50">–</p></div>
+        </aside>
+      </div>`;
+  
+    /* ─── Helpers ─── */
+    const $ = (s) => container.querySelector(s);
+    const ic50Input  = $('#ic50-val');
+    const pic50Input = $('#pic50-val');
+    const unitPill   = $('#unit-pill');
+    const popover    = $('#unit-popover');
+    const resPic50   = $('#result-pic50');
+    const resIC50    = $('#result-ic50');
+  
+    const toMolar = (v,u)=>u==='nM'?v*1e-9:u==='µM'?v*1e-6:u==='mM'?v*1e-3:NaN;
+    const nm = (m)=>m*1e9;
+  
+    function update() {
+      const unit = unitPill.dataset.unit;
+      const ic   = parseFloat(ic50Input.value);
+      const pic  = parseFloat(pic50Input.value);
+  
+      let outPic = '–', outIC='–';
+  
+      if (!isNaN(ic)) {
+        // IC50 provided
+        const mol = toMolar(ic,unit);
+        if (mol>0){outPic=(-Math.log10(mol)).toFixed(2);outIC=nm(mol).toFixed(2);} 
+        pic50Input.disabled=true; ic50Input.disabled=false;
+      } else if (!isNaN(pic)) {
+        const mol=Math.pow(10,-pic);
+        outIC=nm(mol).toFixed(2);outPic=pic.toFixed(2);
+        ic50Input.disabled=true; pic50Input.disabled=false;
+      } else {
+        ic50Input.disabled=false; pic50Input.disabled=false;
+      }
+  
+      resPic50.textContent=outPic; resIC50.textContent=outIC;
     }
-}
-
-// Make it available globally
-window.initIC50Converter = initIC50Converter;
+  
+    /* ─── Events ─── */
+    ic50Input.addEventListener('input',()=>{if(ic50Input.value) pic50Input.value=''; update();});
+    pic50Input.addEventListener('input',()=>{if(pic50Input.value) ic50Input.value=''; update();});
+  
+    unitPill.addEventListener('click',()=>{
+      const exp=unitPill.getAttribute('aria-expanded')==='true';
+      unitPill.setAttribute('aria-expanded',!exp); popover.hidden=exp;
+    });
+    popover.addEventListener('click',(e)=>{
+      if(!e.target.dataset.unit) return;
+      const u=e.target.dataset.unit;
+      unitPill.textContent=`${u} ▼`; unitPill.dataset.unit=u;
+      popover.hidden=true; unitPill.setAttribute('aria-expanded','false');
+      update();
+    });
+    document.addEventListener('click',(e)=>{if(!popover.contains(e.target)&&e.target!==unitPill){popover.hidden=true; unitPill.setAttribute('aria-expanded','false');}});
+    document.addEventListener('keydown',(e)=>{if(e.key==='Escape'){popover.hidden=true; unitPill.setAttribute('aria-expanded','false');}});
+  }
+  
