@@ -126,6 +126,9 @@
   justify-content: center;
 }
 .unit-pill:hover { background: var(--button-bg-hov); }
+/* pill-only wrapper */
+.pill-only { position: relative; display: inline-block; }
+
 
 .unit-popover {
   position: absolute;
