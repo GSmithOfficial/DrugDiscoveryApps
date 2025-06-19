@@ -97,3 +97,14 @@
 .accordion-item.open .accordion-content { display: block; }
 
 .accordion-item.open .accordion-header { margin-bottom: 0; }
+
+/* rail-tab enhancements */
+.tab       { font-size: 15px; font-weight:600; padding:12px 28px; letter-spacing:.015em; }
+.tab-ico   { margin-right:6px; display:inline-flex; align-items:center; }
+.top-nav.compact .tab { font-size:14px; padding:8px 20px; }
+.ink-bar   { height:4px; background:var(--primary-color); transition:transform .2s ease-out,width .2s ease-out; }
+
+/* tool-sheet hover accent */
+.tool-btn { font-size:14px; font-weight:600; padding:12px 0; border-left:3px solid transparent; }
+.tool-btn:hover,
+.tool-btn.active { color:var(--primary-color); border-left-color:var(--primary-color); background:var(--button-bg); }
