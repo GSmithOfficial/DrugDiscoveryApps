@@ -92,3 +92,8 @@
   @media(max-width:768px){.top-nav{gap:12px;padding:0 var(--space-2)}.tool-section{padding:var(--space-4)}}
   @media(max-width:480px){:root{--header-h:50px}.top-nav{height:40px}.tab{padding:0 4px}.ink-bar{height:2px}}
   
+  /* accordion toggle (re-added) */
+.accordion-content { display: none; }
+.accordion-item.open .accordion-content { display: block; }
+
+.accordion-item.open .accordion-header { margin-bottom: 0; }
