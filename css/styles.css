@@ -51,6 +51,12 @@
   /* --------------------------------------------------
      Navigation rows
      --------------------------------------------------*/
+  .category-navigation, .tool-navigation {
+    list-style: none;            /* remove default bullets */
+  }
+  .category-navigation li, .tool-navigation li { list-style: none; }
+  
+     --------------------------------------------------*/
   .category-navigation,.tool-navigation{height:var(--nav-h);display:flex;align-items:center;gap:var(--space-2);padding:0 var(--content-padding);background:var(--card-color);border-bottom:1px solid var(--border-color);position:sticky;z-index:900;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
   .category-navigation::-webkit-scrollbar,.tool-navigation::-webkit-scrollbar{display:none}
   .category-navigation{top:var(--header-h)}
