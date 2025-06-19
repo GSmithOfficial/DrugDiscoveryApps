@@ -129,6 +129,13 @@
 /* pill-only wrapper */
 .pill-only { position: relative; display: inline-block; }
 
+/* make lone pill fully rounded */
+.pill-only .unit-pill {
+  border-radius: 6px;              /* all four corners */
+  border-left: 1px solid var(--border-color); /* restore left border */
+}
+
+
 
 .unit-popover {
   position: absolute;
