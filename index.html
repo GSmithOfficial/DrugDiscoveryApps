@@ -1,52 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drug Discovery Apps</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="chemdoodle/ChemDoodleWeb.css" type="text/css">
-    <script type="text/javascript" src="chemdoodle/ChemDoodleWeb.js"></script>
-    <link rel="stylesheet" href="chemdoodle/uis/jquery-ui-1.11.4.css" type="text/css">
-    <script type="text/javascript" src="chemdoodle/uis/ChemDoodleWeb-uis.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drug Discovery Apps</title>
+
+  <!-- Core styles & libraries -->
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <!-- ChemDoodle (unchanged) -->
+  <link rel="stylesheet" href="chemdoodle/ChemDoodleWeb.css" />
+  <script src="chemdoodle/ChemDoodleWeb.js"></script>
+  <link rel="stylesheet" href="chemdoodle/uis/jquery-ui-1.11.4.css" />
+  <script src="chemdoodle/uis/ChemDoodleWeb-uis.js"></script>
 </head>
+
 <body class="full-page">
-    <div class="app-container">
-        <header class="app-header">
-            <div class="header-content">
-                <h1>Drug Discovery Apps</h1>
-            </div>
-        </header>
-        
-        <nav class="app-navigation">
-            <div class="nav-content">
-                <ul class="category-navigation" role="tablist">
-                    <li><button class="category-button" data-category="medchem" role="tab"><span>Medchem Tools</span></button></li>
-                    <li><button class="category-button" data-category="pk" role="tab"><span>PK Tools</span></button></li>
-                    <li><button class="category-button" data-category="molecular_drawer" role="tab"><span>Molecular Drawer</span></button></li>
-                    <li><button class="category-button" data-category="spectroscopy" role="tab"><span>Spectroscopy</span></button></li>
-                </ul>
-                <ul class="tool-navigation" role="tablist"></ul>
-            </div>
-        </nav>
+  <header>
+    <h1>Drug Discovery Apps</h1>
+  </header>
 
-        <main id="tool-content" class="main-content" role="tabpanel"></main>
+  <!-- mega-menu nav is injected by full-page.js -->
 
-        <footer class="app-footer">
-            <div class="footer-content">
-                <a href="https://www.linkedin.com/in/geoffreymtsmith" target="_blank" class="linkedin-button">
-                    <img src="Buttons/linkedin.png" alt="LinkedIn Profile">
-                </a>
-            </div>
-        </footer>
-    </div>
+  <!-- tool workspace -->
+  <main id="tool-content"></main>
 
-    <script src="js/utils.js"></script>
-    <script src="components/concentrationconverter.js"></script>
-    <script src="components/dosecalculator.js"></script>
-    <script src="components/efficiencymetrics.js"></script>
-    <script src="components/ic50converter.js"></script>
-    <script src="components/nmriumviewer.js"></script>
-    <script src="js/full-page.js"></script>
+  <footer>
+    <a href="https://www.linkedin.com/in/geoffreymtsmith" target="_blank" class="linkedin-button">
+      <img src="Buttons/linkedin.png" alt="LinkedIn Profile" />
+    </a>
+  </footer>
+
+  <!-- Utility + component scripts -->
+  <script src="js/utils.js"></script>
+
+  <!-- Components -->
+  <script src="components/concentrationconverter.js"></script>
+  <script src="components/dosecalculator.js"></script>
+  <script src="components/efficiencymetrics.js"></script>
+  <script src="components/ic50converter.js"></script>
+  <script src="components/nmriumviewer.js"></script>
+
+  <!-- Mega-menu + app bootstrap -->
+  <script src="js/full-page.js"></script>
 </body>
 </html>
