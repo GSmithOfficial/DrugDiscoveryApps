@@ -3,23 +3,23 @@
    Exports:  window.initIC50Converter(containerElement)
    ===========================================================================*/
    function initIC50Converter(container) {
-    /* -----------------------------------------------------------------------
-       Mark-up
-       -------------------------------------------------------------------- */
+    /* -------------------------------------------------------------------- */
+    /*  MARK-UP                                                             */
+    /* -------------------------------------------------------------------- */
     container.innerHTML = `
-        <!-- ── live summary cards ── -->
-        <div class="result-summary">
-            <div class="result-large">
-                <div class="result-title">pIC50</div>
-                <div id="summaryPic50" class="result-value">–</div>
+        <!-- ── LIVE SUMMARY CARDS ── -->
+        <div class="results-panel">
+            <div class="result-card">
+                <div class="card-title">pIC50</div>
+                <strong id="summaryPic50">–</strong>
             </div>
-            <div class="result-large">
-                <div class="result-title">IC50 (nM)</div>
-                <div id="summaryIc50" class="result-value">–</div>
+            <div class="result-card">
+                <div class="card-title">IC50 (nM)</div>
+                <strong id="summaryIc50">–</strong>
             </div>
         </div>
 
-        <!-- ── converter section ── -->
+        <!-- ── CONVERTER SECTION ── -->
         <h2>IC50 ↔ pIC50 Converter</h2>
         <p>Convert between IC50 and pIC50 values for enzyme inhibition studies.</p>
 
@@ -48,9 +48,9 @@
 
         <hr>
 
-        <!-- ── pIC50 fold-difference section ── -->
+        <!-- ── pIC50 FOLD-DIFFERENCE SECTION ── -->
         <h3>pIC50 Fold Difference</h3>
-        <p>Enter two pIC50 values to calculate the potency fold-change ( fold = 10<sup>(ΔpIC50)</sup> ).</p>
+        <p>Enter two pIC50 values to calculate the potency fold-change (<em>fold = 10<sup>ΔpIC50</sup></em>).</p>
 
         <div class="converter-layout">
             <div class="input-group">
@@ -70,80 +70,76 @@
         <div id="foldResult" class="result-box"></div>
     `;
 
-    /* -----------------------------------------------------------------------
-       Element handles
-       -------------------------------------------------------------------- */
-    /* converter */
-    const ic50Input       = container.querySelector('#ic50');
-    const ic50UnitSelect  = container.querySelector('#ic50Unit');
-    const pic50Input      = container.querySelector('#pic50');
-    const convertBtn      = container.querySelector('#convertIC50');
-    const resultBox       = container.querySelector('#ic50Result');
+    /* -------------------------------------------------------------------- */
+    /*  ELEMENT HANDLES                                                     */
+    /* -------------------------------------------------------------------- */
+    // Converter
+    const ic50Input      = container.querySelector('#ic50');
+    const ic50UnitSelect = container.querySelector('#ic50Unit');
+    const pic50Input     = container.querySelector('#pic50');
+    const convertBtn     = container.querySelector('#convertIC50');
+    const resultBox      = container.querySelector('#ic50Result');
 
-    /* live summary */
-    const summaryPic50    = container.querySelector('#summaryPic50');
-    const summaryIc50     = container.querySelector('#summaryIc50');
+    // Live summary
+    const summaryPic50   = container.querySelector('#summaryPic50');
+    const summaryIc50    = container.querySelector('#summaryIc50');
 
-    /* fold-difference */
-    const pic50AInput     = container.querySelector('#pic50A');
-    const pic50BInput     = container.querySelector('#pic50B');
-    const calcFoldBtn     = container.querySelector('#calcFold');
-    const foldResultBox   = container.querySelector('#foldResult');
+    // Fold-difference
+    const pic50AInput    = container.querySelector('#pic50A');
+    const pic50BInput    = container.querySelector('#pic50B');
+    const calcFoldBtn    = container.querySelector('#calcFold');
+    const foldResultBox  = container.querySelector('#foldResult');
 
-    /* -----------------------------------------------------------------------
-       IC50 ↔ pIC50 logic
-       -------------------------------------------------------------------- */
+    /* -------------------------------------------------------------------- */
+    /*  IC50 ↔ pIC50 LOGIC                                                  */
+    /* -------------------------------------------------------------------- */
     convertBtn.addEventListener('click', convertIC50);
 
-    ic50Input.addEventListener('input', () => {
-        pic50Input.value      = '';
-        resultBox.textContent = '';
+    ic50Input.addEventListener('input', () => {        // clear opposite field
+        pic50Input.value       = '';
+        resultBox.textContent  = '';
         resetSummary();
     });
-
     pic50Input.addEventListener('input', () => {
-        ic50Input.value       = '';
-        resultBox.textContent = '';
+        ic50Input.value        = '';
+        resultBox.textContent  = '';
         resetSummary();
     });
 
     function convertIC50() {
-        /* ── IC50 → pIC50 ── */
+        /* ---- IC50 ➜ pIC50 ---- */
         if (ic50Input.value !== '') {
             let ic50 = parseFloat(ic50Input.value);
             if (isNaN(ic50) || ic50 <= 0) {
                 resultBox.textContent = 'Please enter a valid IC50 value.';
                 return;
             }
-            if (ic50UnitSelect.value === 'µM') ic50 *= 1000;  // µM → nM
+            if (ic50UnitSelect.value === 'µM') ic50 *= 1000;          // µM ➜ nM
+            const pic50 = -Math.log10(ic50 * 1e-9);                  // nM ⟶ M → –log10
 
-            const pic50 = -Math.log10(ic50 * 1e-9);          // nM ⇒ M then -log10
             pic50Input.value      = pic50.toFixed(2);
             resultBox.textContent = `pIC50: ${pic50.toFixed(2)}`;
 
-            /* live summary */
             summaryPic50.textContent = pic50.toFixed(2);
             summaryIc50.textContent  = ic50.toFixed(2);
 
-        /* ── pIC50 → IC50 ── */
+        /* ---- pIC50 ➜ IC50 ---- */
         } else if (pic50Input.value !== '') {
             const pic50 = parseFloat(pic50Input.value);
             if (isNaN(pic50)) {
                 resultBox.textContent = 'Please enter a valid pIC50 value.';
                 return;
             }
-            let ic50 = Math.pow(10, -pic50) * 1e9;           // nM
-            let displayIc50 = ic50;
+            let ic50nM = Math.pow(10, -pic50) * 1e9;                 // return nM
+            let displayIc50 = ic50nM;
 
-            if (ic50UnitSelect.value === 'µM') {
-                displayIc50 = ic50 / 1000;                   // show µM if selected
-            }
+            if (ic50UnitSelect.value === 'µM') displayIc50 = ic50nM / 1000;
+
             ic50Input.value       = displayIc50.toFixed(2);
             resultBox.textContent = `IC50: ${displayIc50.toFixed(2)} ${ic50UnitSelect.value}`;
 
-            /* live summary – always store in nM */
             summaryPic50.textContent = pic50.toFixed(2);
-            summaryIc50.textContent  = ic50.toFixed(2);
+            summaryIc50.textContent  = ic50nM.toFixed(2);            // always nM in card
         } else {
             resultBox.textContent = 'Please enter a value for either IC50 or pIC50.';
         }
@@ -154,13 +150,12 @@
         summaryIc50.textContent  = '–';
     }
 
-    /* -----------------------------------------------------------------------
-       pIC50 fold-difference logic
-       -------------------------------------------------------------------- */
+    /* -------------------------------------------------------------------- */
+    /*  pIC50 FOLD-DIFFERENCE LOGIC                                         */
+    /* -------------------------------------------------------------------- */
     [pic50AInput, pic50BInput].forEach(el =>
         el.addEventListener('input', () => {
-            /* enable / disable button */
-            calcFoldBtn.disabled = !(pic50AInput.value !== '' && pic50BInput.value !== '');
+            calcFoldBtn.disabled = !(pic50AInput.value && pic50BInput.value);
             foldResultBox.textContent = '';
         })
     );
@@ -173,11 +168,12 @@
             foldResultBox.textContent = 'Please enter two valid pIC50 values.';
             return;
         }
-
         const fold = Math.pow(10, b - a);
         foldResultBox.textContent = `Fold difference: ${fold.toFixed(1)}×`;
     });
 }
 
-/* ── export globally ── */
+/* ------------------------------------------------------------------------
+   EXPORT
+   --------------------------------------------------------------------- */
 window.initIC50Converter = initIC50Converter;
