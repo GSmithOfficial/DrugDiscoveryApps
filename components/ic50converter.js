@@ -139,4 +139,45 @@
                 displayIc50 = ic50 / 1000;                   // show µM if selected
             }
             ic50Input.value       = displayIc50.toFixed(2);
-            resultBox.textContent = `IC50: ${displayIc50.toF
+            resultBox.textContent = `IC50: ${displayIc50.toFixed(2)} ${ic50UnitSelect.value}`;
+
+            /* live summary – always store in nM */
+            summaryPic50.textContent = pic50.toFixed(2);
+            summaryIc50.textContent  = ic50.toFixed(2);
+        } else {
+            resultBox.textContent = 'Please enter a value for either IC50 or pIC50.';
+        }
+    }
+
+    function resetSummary() {
+        summaryPic50.textContent = '–';
+        summaryIc50.textContent  = '–';
+    }
+
+    /* -----------------------------------------------------------------------
+       pIC50 fold-difference logic
+       -------------------------------------------------------------------- */
+    [pic50AInput, pic50BInput].forEach(el =>
+        el.addEventListener('input', () => {
+            /* enable / disable button */
+            calcFoldBtn.disabled = !(pic50AInput.value !== '' && pic50BInput.value !== '');
+            foldResultBox.textContent = '';
+        })
+    );
+
+    calcFoldBtn.addEventListener('click', () => {
+        const a = parseFloat(pic50AInput.value);
+        const b = parseFloat(pic50BInput.value);
+
+        if (isNaN(a) || isNaN(b)) {
+            foldResultBox.textContent = 'Please enter two valid pIC50 values.';
+            return;
+        }
+
+        const fold = Math.pow(10, b - a);
+        foldResultBox.textContent = `Fold difference: ${fold.toFixed(1)}×`;
+    });
+}
+
+/* ── export globally ── */
+window.initIC50Converter = initIC50Converter;
