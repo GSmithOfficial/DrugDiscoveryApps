@@ -13,6 +13,10 @@
   <script src="chemdoodle/ChemDoodleWeb.js"></script>
   <link rel="stylesheet" href="chemdoodle/uis/jquery-ui-1.11.4.css" />
   <script src="chemdoodle/uis/ChemDoodleWeb-uis.js"></script>
+
+  <!-- 3Dmol.js (GLOBAL) -->
+  <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
+  <script src="https://3Dmol.org/build/3Dmol.ui-min.js"></script>
 </head>
 
 <body class="full-page">
@@ -21,8 +25,6 @@
   </header>
 
   <!-- mega-menu nav is injected by full-page.js -->
-
-  <!-- tool workspace -->
   <main id="tool-content"></main>
 
   <footer>
@@ -31,9 +33,6 @@
     </a>
   </footer>
 
-  <!-- Utility + component scripts -->
-  <script src="js/utils.js"></script>
-
   <!-- Components -->
   <script src="components/concentrationconverter.js"></script>
   <script src="components/dosecalculator.js"></script>
@@ -41,6 +40,7 @@
   <script src="components/ic50converter.js"></script>
   <script src="components/nmriumviewer.js"></script>
   <script src="components/moleculardrawer.js"></script>
+  <script src="components/3dmolviewer.js"></script>
 
   <!-- Mega-menu + app bootstrap -->
   <script src="js/full-page.js"></script>
