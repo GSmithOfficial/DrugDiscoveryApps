@@ -1,24 +1,13 @@
 /* ============================================================================
-   Live IC50 ↔ pIC50 converter  +  KPI bar  +  Fold-difference (unchanged)
+   Live IC50 ↔ pIC50 converter  +  KPI bar  +  Fold-difference
+   KPI bar now appears under the converter, above the divider
    ===========================================================================*/
    function initIC50Converter(container) {
     /* -------------------------------------------------------------------- */
-    /*  MARK-UP (top converter only)                                        */
+    /*  MARK-UP (order changed)                                             */
     /* -------------------------------------------------------------------- */
     container.innerHTML = `
-        <!-- KPI BAR -->
-        <div class="kpi-bar">
-            <div class="kpi-block">
-                <span class="kpi-label">pIC50</span>
-                <span id="summaryPic50" class="kpi-value">–</span>
-            </div>
-            <div class="kpi-block">
-                <span class="kpi-label">IC50 (nM)</span>
-                <span id="summaryIc50" class="kpi-value">–</span>
-            </div>
-        </div>
-
-        <!-- LIVE CONVERTER (auto) -->
+        <!-- CONVERTER (auto) -->
         <h2>IC50 ↔ pIC50 Converter</h2>
         <p>Convert between IC50 and pIC50 values for enzyme inhibition studies.</p>
 
@@ -42,7 +31,19 @@
             </div>
         </div>
 
-        <!-- Fold-difference card is injected exactly as before -->
+        <!-- KPI BAR (moved down) -->
+        <div class="kpi-bar">
+            <div class="kpi-block">
+                <span class="kpi-label">pIC50</span>
+                <span id="summaryPic50" class="kpi-value">–</span>
+            </div>
+            <div class="kpi-block">
+                <span class="kpi-label">IC50 (nM)</span>
+                <span id="summaryIc50" class="kpi-value">–</span>
+            </div>
+        </div>
+
+        <!-- Fold-difference card (unchanged) -->
         <hr />
         <h3>pIC50 Fold Difference</h3>
         <p>Enter two pIC50 values to calculate the potency fold-change (<em>fold = 10<sup>ΔpIC50</sup></em>).</p>
