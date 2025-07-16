@@ -95,7 +95,9 @@
     function populateChains(arr){chainMulti.innerHTML='';arr.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;chainMulti.appendChild(o);});}
     function selectionFromUI(){
     switch(selType.value){
-    case'protein':return{selStr:'{protein:true}',desc:'Protein',selObj:{protein:true}};
+        case 'protein':
+            return { selStr: '{hetflag:false}', desc: 'Protein', selObj: { hetflag: false } };
+          
     case'ligand': return{selStr:'{hetflag:true}',desc:'Ligands (het)',selObj:{hetflag:true}};
     case'chain':  const cs=[...chainMulti.selectedOptions].map(o=>o.value);return{selStr:`{chain:'${cs.join(',')}'}`,desc:`Chain(s) ${cs.join(',')}`,selObj:{chain:cs.join(',')}};
     case'custom': const raw=customIn.value.trim();return{selStr:raw,desc:`Custom: ${raw}`,selObj:eval('('+raw+')')}; // eslint-disable-line
@@ -121,10 +123,26 @@
     viewer.clear();rules=[];
     await $3Dmol.download(`pdb:${id}`,viewer,{});
     const atoms=viewer.selectedAtoms({});availableChains=[...new Set(atoms.filter(a=>a.chain).map(a=>a.chain))];populateChains(availableChains);
-    /* default rules */
-    rules.push({selStr:'{protein:true}',selObj:{protein:true},styleObj:{cartoon:{color:'spectrum'}},desc:'Protein → cartoon:spectrum'});
-    rules.push({selStr:'{hetflag:true}',selObj:{hetflag:true},styleObj:{stick:{}},desc:'Ligands → stick'});
-    rules.push({selStr:'{resn:"HOH"}',selObj:{resn:'HOH'},styleObj:{},desc:'Hide water'});
+   /* default rules */
+rules.push({
+    selStr: '{hetflag:false}',
+    selObj: { hetflag: false },
+    styleObj: { cartoon: { color: 'spectrum' } },
+    desc: 'Protein → cartoon:spectrum'
+  });
+  rules.push({
+    selStr: '{hetflag:true}',
+    selObj: { hetflag: true },
+    styleObj: { stick: {} },
+    desc: 'Ligands → stick'
+  });
+  rules.push({
+    selStr: '{resn:"HOH"}',
+    selObj: { resn: "HOH" },
+    styleObj: {},
+    desc: 'Hide water'
+  });
+  
     refreshRuleList();applyRules();}
     loadBtn.onclick=()=>loadPDB(pdbInput.value.trim()||'2POR');
     
