@@ -483,6 +483,16 @@ button:disabled {
   border-right: none;
   min-width: 0;
 }
+/* horizontal variant used by live IC50 field */
+.input-with-select.horizontal {
+  display: flex;
+  gap: 0.25rem;
+}
+.input-with-select.horizontal input,
+.input-with-select.horizontal select {
+  flex: 1 0 auto;
+}
+
 
 .unit-pill {
   flex: 0 0 80px;
