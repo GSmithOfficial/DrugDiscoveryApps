@@ -497,8 +497,6 @@ button:disabled {
   flex: 0 0 4.5rem;               /* fixed pill width */
   min-width: 4.5rem;              /* prevents squeeze */
 }
-
-}
 .input-with-select.horizontal input,
 .input-with-select.horizontal select {
   flex: 1 0 auto;
