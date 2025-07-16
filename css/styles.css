@@ -1048,4 +1048,79 @@ select:focus {
   color: white;
   font-size: 0.8rem;
 }
+/* ─── KPI BAR (compact summary tiles) ────────────────────────────────── */
+.kpi-bar {
+  display: flex;
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+
+/* each metric tile */
+.kpi-block {
+  flex: 1;
+  position: relative;
+  padding: var(--space-5) var(--space-8);
+  text-align: center;
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+/* vertical divider (auto-suppressed on last child) */
+.kpi-block:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 25%;
+  bottom: 25%;
+  right: 0;
+  width: 1px;
+  background: var(--gray-200);
+}
+
+/* label vs. value */
+.kpi-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.04em;
+  color: var(--gray-600);
+  margin-bottom: var(--space-2);
+}
+
+.kpi-value {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--primary-blue);
+}
+
+/* micro-interaction: raise on hover */
+.kpi-block.raised,
+.kpi-block:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+}
+
+/* flash feedback when copied */
+.kpi-block.copied .kpi-value {
+  animation: kpiCopiedFlash 1.2s ease-in-out;
+}
+
+@keyframes kpiCopiedFlash {
+  0%   { color: var(--primary-blue); }
+  30%  { color: var(--secondary-green); }
+  100% { color: var(--primary-blue); }
+}
+
+/* mobile: stack vertically & flip divider */
+@media (max-width: 600px) {
+  .kpi-bar          { flex-direction: column; }
+  .kpi-block:not(:last-child)::after {
+    width: 100%;
+    height: 1px;
+    top: auto;
+    bottom: 0;
+    right: 0;
+  }
+}
+
 

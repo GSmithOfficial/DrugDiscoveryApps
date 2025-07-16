@@ -1,5 +1,5 @@
 /* ============================================================================
-   IC50 / pIC50 tools – live summary + fold-difference
+   IC50 / pIC50 tools – KPI bar + fold-difference
    Exports:  window.initIC50Converter(containerElement)
    ===========================================================================*/
    function initIC50Converter(container) {
@@ -7,15 +7,15 @@
     /*  MARK-UP                                                             */
     /* -------------------------------------------------------------------- */
     container.innerHTML = `
-        <!-- ── LIVE SUMMARY CARDS ── -->
-        <div class="results-panel">
-            <div class="result-card">
-                <div class="card-title">pIC50</div>
-                <strong id="summaryPic50">–</strong>
+        <!-- ── KPI BAR ── -->
+        <div class="kpi-bar">
+            <div class="kpi-block" data-target="pic50">
+                <span class="kpi-label">pIC50</span>
+                <span id="summaryPic50" class="kpi-value">–</span>
             </div>
-            <div class="result-card">
-                <div class="card-title">IC50 (nM)</div>
-                <strong id="summaryIc50">–</strong>
+            <div class="kpi-block" data-target="ic50">
+                <span class="kpi-label">IC50 (nM)</span>
+                <span id="summaryIc50" class="kpi-value">–</span>
             </div>
         </div>
 
@@ -46,11 +46,11 @@
         <button id="convertIC50">Calculate</button>
         <div id="ic50Result" class="result-box"></div>
 
-        <hr>
+        <hr />
 
         <!-- ── pIC50 FOLD-DIFFERENCE SECTION ── -->
         <h3>pIC50 Fold Difference</h3>
-        <p>Enter two pIC50 values to calculate the potency fold-change (<em>fold = 10<sup>ΔpIC50</sup></em>).</p>
+        <p>Enter two pIC50 values to calculate the potency fold-change (<em>fold&nbsp;=&nbsp;10<sup>ΔpIC50</sup></em>).</p>
 
         <div class="converter-layout">
             <div class="input-group">
@@ -80,9 +80,10 @@
     const convertBtn     = container.querySelector('#convertIC50');
     const resultBox      = container.querySelector('#ic50Result');
 
-    // Live summary
+    // KPI bar
     const summaryPic50   = container.querySelector('#summaryPic50');
     const summaryIc50    = container.querySelector('#summaryIc50');
+    const kpiBlocks      = container.querySelectorAll('.kpi-block');
 
     // Fold-difference
     const pic50AInput    = container.querySelector('#pic50A');
@@ -91,19 +92,38 @@
     const foldResultBox  = container.querySelector('#foldResult');
 
     /* -------------------------------------------------------------------- */
+    /*  KPI BAR MICRO-INTERACTIONS                                          */
+    /* -------------------------------------------------------------------- */
+    kpiBlocks.forEach(block => {
+        // Hover raise
+        block.addEventListener('mouseenter', () => block.classList.add('raised'));
+        block.addEventListener('mouseleave', () => block.classList.remove('raised'));
+
+        // Click → copy value to clipboard
+        block.addEventListener('click', () => {
+            const valSpan = block.querySelector('.kpi-value');
+            if (!valSpan) return;
+            navigator.clipboard.writeText(valSpan.textContent).then(() => {
+                block.classList.add('copied');
+                setTimeout(() => block.classList.remove('copied'), 1200);
+            });
+        });
+    });
+
+    /* -------------------------------------------------------------------- */
     /*  IC50 ↔ pIC50 LOGIC                                                  */
     /* -------------------------------------------------------------------- */
     convertBtn.addEventListener('click', convertIC50);
 
-    ic50Input.addEventListener('input', () => {        // clear opposite field
-        pic50Input.value       = '';
-        resultBox.textContent  = '';
-        resetSummary();
+    ic50Input.addEventListener('input', () => {   // clear opposite field
+        pic50Input.value      = '';
+        resultBox.textContent = '';
+        resetKPI();
     });
     pic50Input.addEventListener('input', () => {
-        ic50Input.value        = '';
-        resultBox.textContent  = '';
-        resetSummary();
+        ic50Input.value       = '';
+        resultBox.textContent = '';
+        resetKPI();
     });
 
     function convertIC50() {
@@ -114,8 +134,8 @@
                 resultBox.textContent = 'Please enter a valid IC50 value.';
                 return;
             }
-            if (ic50UnitSelect.value === 'µM') ic50 *= 1000;          // µM ➜ nM
-            const pic50 = -Math.log10(ic50 * 1e-9);                  // nM ⟶ M → –log10
+            if (ic50UnitSelect.value === 'µM') ic50 *= 1000;         // µM ➜ nM
+            const pic50 = -Math.log10(ic50 * 1e-9);                 // nM ⟶ M → –log10
 
             pic50Input.value      = pic50.toFixed(2);
             resultBox.textContent = `pIC50: ${pic50.toFixed(2)}`;
@@ -130,7 +150,7 @@
                 resultBox.textContent = 'Please enter a valid pIC50 value.';
                 return;
             }
-            let ic50nM = Math.pow(10, -pic50) * 1e9;                 // return nM
+            let ic50nM = Math.pow(10, -pic50) * 1e9;                // nM
             let displayIc50 = ic50nM;
 
             if (ic50UnitSelect.value === 'µM') displayIc50 = ic50nM / 1000;
@@ -139,13 +159,13 @@
             resultBox.textContent = `IC50: ${displayIc50.toFixed(2)} ${ic50UnitSelect.value}`;
 
             summaryPic50.textContent = pic50.toFixed(2);
-            summaryIc50.textContent  = ic50nM.toFixed(2);            // always nM in card
+            summaryIc50.textContent  = ic50nM.toFixed(2);           // always nM in KPI
         } else {
             resultBox.textContent = 'Please enter a value for either IC50 or pIC50.';
         }
     }
 
-    function resetSummary() {
+    function resetKPI() {
         summaryPic50.textContent = '–';
         summaryIc50.textContent  = '–';
     }
@@ -155,7 +175,7 @@
     /* -------------------------------------------------------------------- */
     [pic50AInput, pic50BInput].forEach(el =>
         el.addEventListener('input', () => {
-            calcFoldBtn.disabled = !(pic50AInput.value && pic50BInput.value);
+            calcFoldBtn.disabled   = !(pic50AInput.value && pic50BInput.value);
             foldResultBox.textContent = '';
         })
     );
