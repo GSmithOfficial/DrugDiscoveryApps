@@ -163,8 +163,21 @@
             foldResultBox.textContent = 'Please enter two valid pIC50 values.';
             return;
         }
-        const fold = Math.pow(10, b - a);
-        foldResultBox.textContent = `Fold difference: ${format(fold, 1)}×`;
+        const delta = b - a;                     // ΔpIC50
+if (delta === 0) {
+    foldResultBox.textContent = 'Fold difference: 1× (no change)';
+} else {
+    const fold = Math.pow(10, Math.abs(delta));
+    if (delta > 0) {
+        foldResultBox.textContent = `Fold difference: ${format(fold, 1)}× more potent`;
+    } else {
+        foldResultBox.textContent = `Fold difference: ${format(1 / fold, 2)}× less potent`;
+        /*  or, if you prefer the reciprocal form:
+            foldResultBox.textContent = \`Fold difference: ${format(fold,1)}× decrease\`;
+        */
+    }
+}
+
     });
 }
 

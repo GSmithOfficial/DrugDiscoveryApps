@@ -484,9 +484,20 @@ button:disabled {
   min-width: 0;
 }
 /* horizontal variant used by live IC50 field */
+/* horizontal variant used by live IC50 field */
 .input-with-select.horizontal {
   display: flex;
-  gap: 0.25rem;
+  align-items: center;
+}
+.input-with-select.horizontal input {
+  flex: 1 1 auto;                 /* take remaining width */
+  margin-right: 0.4rem;           /* keeps a clear gap */
+}
+.input-with-select.horizontal select {
+  flex: 0 0 4.5rem;               /* fixed pill width */
+  min-width: 4.5rem;              /* prevents squeeze */
+}
+
 }
 .input-with-select.horizontal input,
 .input-with-select.horizontal select {
