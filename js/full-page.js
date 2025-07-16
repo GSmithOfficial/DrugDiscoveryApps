@@ -1,135 +1,165 @@
-// full-page.js – Adds new "Viewer" tab category with placeholder tool
+/* full-page.js – rail-tab mega-menu with icons + transform ink-bar  (2025-07-16) */
 
-document.addEventListener('DOMContentLoaded', function() {
-  const categoryButtons = document.querySelectorAll('.category-button');
-  const toolNavigation   = document.querySelector('.tool-navigation');
-  const toolContent      = document.getElementById('tool-content');
+document.addEventListener('DOMContentLoaded', () => {
+  /* ─── Safely call a tool’s init or show a fallback ───────────────────────── */
+  const safe = fn => (typeof fn === 'function'
+    ? fn
+    : container => {
+        container.innerHTML =
+          '<p style="padding:24px;color:var(--accent-red);text-align:center">' +
+          'Tool unavailable (missing script)</p>';
+      });
 
-  // ─── TOOL REGISTRY ──────────────────────────────────────────────
-  // Each category contains an array of tools that will be shown in
-  // the secondary navigation bar (toolNavigation). A tool entry
-  // needs an id, display name, and an init() handler that receives
-  // a DOM element where it should render its UI.
-  // ----------------------------------------------------------------
+  /* ─── TOOL REGISTRY – each category becomes a top-level tab ──────────────── */
   const tools = {
-      // Medicinal chemistry calculators
-      medchem: [
-          { id: 'ic50-converter',       name: 'IC50&nbsp;Converter',    init: initIC50Converter },
-          { id: 'efficiency-metrics',  name: 'Efficiency&nbsp;Metrics',init: initEfficiencyMetrics },
-          { id: 'concentration-converter', name: 'Conc.&nbsp;Converter', init: initConcentrationConverter }
-      ],
+    /* 1 ── MEDICINAL CHEMISTRY */
+    medchem: [
+      { id: 'ic50-converter',        name: 'IC50 ↔ pIC50',     init: safe(window.initIC50Converter)  },
+      { id: 'efficiency-metrics',   name: 'Efficiency Metrics',init: safe(window.initEfficiencyMetrics) }
+    ],
 
-      // Pharmacokinetics utilities
-      pk: [
-          { id: 'dose-calculator',     name: 'Dose&nbsp;Calculator',   init: initDoseCalculator },
-          { id: 'concentration-converter', name: 'Conc.&nbsp;Converter', init: initConcentrationConverter }
-      ],
+    /* 2 ── PHARMACOKINETICS */
+    pk: [
+      { id: 'concentration-converter', name: 'Conc. Converter', init: safe(window.initConcentrationConverter) },
+      { id: 'dose-calculator',         name: 'Dose Calculator', init: safe(window.initDoseCalculator) }
+    ],
 
-      // Stand‑alone molecular drawing page (Ketcher)
-      ketcher: [
-          { id: 'ketcher-iframe',      name: 'Ketcher',               init: initKetcher }
-      ],
+    /* 3 ── MOLECULAR DRAWER (single-tool tab) */
+    molecular_drawer: [
+      { id: 'molecular-drawer', name: 'Molecular Drawer', init: safe(window.initMolecularDrawer) }
+    ],
 
-      // NEW ─── Viewer category (blank placeholder) ────────────────
-      // This ships with a single placeholder tool so that the UI
-      // logic that expects at least one tool can stay unchanged.
-      viewer: [
-          { id: 'viewer-placeholder',  name: 'Coming&nbsp;Soon',       init: initViewerPlaceholder }
-      ]
+    /* 4 ── SPECTROSCOPY (single-tool tab) */
+    spectroscopy: [
+      { id: 'nmrium-viewer', name: 'NMR Viewer', init: safe(window.initNMRViewer) }
+    ],
+
+    /* 5 ── NEW: VIEWER (no sub-menu) */
+    viewer: [
+      { id: 'nmrium-viewer', name: 'NMR Viewer', init: safe(window.initNMRViewer) }
+    ]
   };
 
-  // ─── NAVIGATION HELPERS ────────────────────────────────────────
-  function populateToolNavigation(category) {
-      toolNavigation.innerHTML = '';
+  /* ─── SVG ICONS – lightweight line icons (16 × 16) ──────────────────────── */
+  const ico = {
+    medchem:         `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         <path d="M3 2h18M8 2l3 8v11a2 2 0 0 0 4 0V10l3-8"/>
+                       </svg>`,
+    pk:              `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         <polyline points="1 12 5 12 9 3 15 21 19 12 23 12"/>
+                       </svg>`,
+    molecular_drawer:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         <path d="M12 19l7-7 3 3-10 10L2 12l5-5 3 3-3 3 5 5z"/>
+                       </svg>`,
+    spectroscopy:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         <path d="M2 12h4l3 8 4-16 3 8h4"/>
+                       </svg>`,
+    viewer:          `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/>
+                         <circle cx="12" cy="12" r="3"/>
+                       </svg>`
+  };
 
-      if (!tools[category] || tools[category].length === 0) return; // blank category safeguard
+  /* ─── DOM REFERENCES ────────────────────────────────────────────────────── */
+  const header      = document.querySelector('header');
+  const toolHolder  = document.getElementById('tool-content');
 
-      tools[category].forEach((tool, idx) => {
-          const btn = document.createElement('button');
-          btn.classList.add('tool-button');
-          btn.dataset.toolId = tool.id;
-          btn.innerHTML = tool.name;
-          if (idx === 0) btn.classList.add('active');
-          toolNavigation.appendChild(btn);
-      });
-  }
+  /* ─── BUILD NAVIGATION BAR ──────────────────────────────────────────────── */
+  const nav = document.createElement('nav');
+  nav.className = 'top-nav';
 
-  function loadTool(category, toolId) {
-      // Guard against categories that do not yet have any published tools
-      if (!tools[category] || tools[category].length === 0) {
-          toolContent.innerHTML = '<p class="loading-tool">Tools for this category are coming soon.</p>';
-          return;
-      }
+  /* animated ink-bar */
+  const ink = document.createElement('div');
+  ink.className = 'ink-bar';
+  nav.appendChild(ink);
 
-      const tool = tools[category].find(t => t.id === toolId);
-      if (tool) {
-          toolContent.innerHTML = '';
-          tool.init(toolContent);
-      }
-  }
-
-  // ─── TOOL INITIALISERS ─────────────────────────────────────────
-  function initKetcher(container) {
-      container.innerHTML = `
-          <div class="ketcher-note">
-              <p><strong>Note:</strong> Ketcher operates in stand‑alone mode. The “Save&nbsp;As” feature is not available here.</p>
-          </div>
-          <iframe id="ifKetcher" src="Ketcher/index.html" width="750" height="600"></iframe>
-      `;
-  }
-
-  // Simple placeholder for the new Viewer tab
-  function initViewerPlaceholder(container) {
-      container.innerHTML = `
-          <section class="tool-card">
-              <h2>Viewer Tools</h2>
-              <p>🚧 Viewer‑specific utilities will appear here soon. Stay tuned!</p>
-          </section>`;
-  }
-
-  // ─── EVENT WIRING ──────────────────────────────────────────────
-  categoryButtons.forEach(button => {
-      button.addEventListener('click', () => {
-          const category = button.dataset.category;
-
-          // Highlight active category
-          categoryButtons.forEach(btn => btn.classList.remove('active'));
-          button.classList.add('active');
-
-          // Populate secondary nav + load first tool (if any)
-          populateToolNavigation(category);
-          if (tools[category] && tools[category].length > 0) {
-              loadTool(category, tools[category][0].id);
-          } else {
-              toolNavigation.innerHTML = '';
-              toolContent.innerHTML = '<p class="loading-tool">Tools for this category are coming soon.</p>';
-          }
-      });
+  /* category tabs (in insertion order) */
+  Object.keys(tools).forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'tab';
+    btn.dataset.category = cat;
+    btn.innerHTML = `
+      <span class="tab-ico">${ico[cat]}</span>
+      <span class="tab-label">${cat.replace('_', ' ')
+                                    .replace(/\b\w/g, s => s.toUpperCase())}</span>`;
+    nav.appendChild(btn);
   });
 
-  toolNavigation.addEventListener('click', evt => {
-      if (!evt.target.classList.contains('tool-button')) return;
+  header.after(nav);
 
-      const toolId   = evt.target.dataset.toolId;
-      const category = document.querySelector('.category-button.active').dataset.category;
+  /* Sheet that holds per-category tool buttons (hidden when only one tool) */
+  const sheet = document.createElement('div');
+  sheet.className = 'tool-sheet';
+  nav.after(sheet);
 
-      // Highlight active tool
-      toolNavigation.querySelectorAll('.tool-button').forEach(btn => btn.classList.remove('active'));
-      evt.target.classList.add('active');
+  /* ─── HELPERS ───────────────────────────────────────────────────────────── */
+  const moveInk = el => {
+    ink.style.transform = `translateX(${el.offsetLeft}px)`;
+    ink.style.width     = `${el.offsetWidth}px`;
+  };
 
-      loadTool(category, toolId);
+  function openCategory(cat) {
+    /* highlight active tab + animate ink-bar */
+    [...nav.querySelectorAll('.tab')].forEach(t =>
+      t.classList.toggle('active', t.dataset.category === cat)
+    );
+    moveInk(nav.querySelector('.tab.active'));
+
+    /* clear previous sheet contents */
+    sheet.innerHTML = '';
+
+    /* if the category has more than one tool, build the mini-menu */
+    if (tools[cat].length > 1) {
+      tools[cat].forEach(tool => {
+        const btn = document.createElement('button');
+        btn.className = 'tool-btn';
+        btn.textContent = tool.name;
+        btn.dataset.toolId = tool.id;
+        btn.onclick = () => loadTool(cat, tool.id);
+        sheet.appendChild(btn);
+      });
+      sheet.style.height = `${sheet.scrollHeight}px`;
+    } else {
+      /* hide sheet when there’s only one tool */
+      sheet.style.height = '0px';
+    }
+
+    /* auto-load the first (or only) tool */
+    loadTool(cat, tools[cat][0].id);
+  }
+
+  function loadTool(cat, id) {
+    const tool = tools[cat].find(t => t.id === id);
+    if (!tool) return;
+
+    /* show active state in sheet (if visible) */
+    [...sheet.querySelectorAll('.tool-btn')].forEach(b =>
+      b.classList.toggle('active', b.dataset.toolId === id)
+    );
+
+    /* (re)initialise tool */
+    toolHolder.innerHTML = '';
+    tool.init(toolHolder);
+  }
+
+  /* ─── EVENT LISTENERS ───────────────────────────────────────────────────── */
+  nav.addEventListener('click', e => {
+    const tab = e.target.closest('.tab');
+    if (tab) openCategory(tab.dataset.category);
   });
 
-  // ─── DEEP LINK SUPPORT ────────────────────────────────────────
-  const urlParams       = new URLSearchParams(window.location.search);
-  const initialCategory = urlParams.get('category') || 'medchem';
-  const initialTool     = urlParams.get('tool');
+  /* compact header on scroll */
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    nav.classList.toggle('compact', y > 100);
+    sheet.classList.toggle('compact', y > 100);
+  });
 
-  const initialCategoryBtn = document.querySelector(`[data-category="${initialCategory}"]`) || categoryButtons[0];
-  initialCategoryBtn.click();
-
-  if (initialTool) {
-      const initialToolBtn = toolNavigation.querySelector(`[data-tool-id="${initialTool}"]`);
-      if (initialToolBtn) initialToolBtn.click();
-  }
+  /* ─── INITIALISE (default to MedChem) ───────────────────────────────────── */
+  openCategory('medchem');
 });
