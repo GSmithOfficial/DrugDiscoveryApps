@@ -73,6 +73,7 @@
           <div class="viewer-container">
             <div id="gldiv-3dmol" style="width: 100%; height: 100%; position: relative;"></div>
             <div class="camera-toolbar">
+              <button id="camera-bg-toggle" title="Switch to dark background">🌙</button>
               <button id="camera-zoomIn" title="Zoom In">+</button>
               <button id="camera-zoomOut" title="Zoom Out">-</button>
               <button id="camera-resetView" title="Reset View">Reset</button>
@@ -214,6 +215,22 @@
       container.querySelector('#camera-zoomOut').addEventListener('click', () => viewer.zoom(0.8, 200));
       container.querySelector('#camera-resetView').addEventListener('click', () => viewer.zoomTo(200));
       container.querySelector('#camera-toggleSpin').addEventListener('click', () => viewer.spin(!viewer.isSpinning()));
+      
+      // ▼▼▼ CHANGE 2: New event handler for the background toggle ▼▼▼
+      const bgToggleBtn = container.querySelector('#camera-bg-toggle');
+      let isBackgroundDark = false;
+      bgToggleBtn.addEventListener('click', () => {
+        isBackgroundDark = !isBackgroundDark;
+        if (isBackgroundDark) {
+          viewer.setBackgroundColor(0x000000); // Black
+          bgToggleBtn.innerHTML = '☀️';
+          bgToggleBtn.title = 'Switch to light background';
+        } else {
+          viewer.setBackgroundColor(0xFFFFFF); // White
+          bgToggleBtn.innerHTML = '🌙';
+          bgToggleBtn.title = 'Switch to dark background';
+        }
+      });
 
       // 7. Initial Load.
       await loadPDB('2POR');
