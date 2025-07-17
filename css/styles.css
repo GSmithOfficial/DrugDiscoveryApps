@@ -1159,69 +1159,131 @@ select:focus {
   cursor: pointer;
 }
 /* ================================================================
-   3Dmol.js Viewer Styles (Toolbar Enhancement)
+   3Dmol.js Viewer Component Styles
    ================================================================ */
 
-/* Container to position the viewer and toolbar */
+/* Grid layout for the control panel */
+.viewer-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-4);
+  align-items: end;
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--gray-100);
+  margin-bottom: var(--space-6);
+}
+
+.viewer-controls-grid .input-group {
+  margin: 0;
+}
+
+.viewer-controls-grid .input-group.full-width {
+  grid-column: 1 / -1; /* Make an item span the full width */
+}
+
+/* Specific adjustments for the PDB input */
+.pdb-input-group {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.pdb-input-group input {
+  flex-grow: 1;
+}
+
+/* Styling for the rule list */
+.rule-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-6) 0;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--gray-100);
+  border-radius: var(--border-radius);
+}
+
+.rule-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--white);
+  font-size: var(--font-size-sm);
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.rule-item:last-child {
+  border-bottom: none;
+}
+
+.rule-item .handle {
+  cursor: grab;
+  color: var(--gray-400);
+}
+
+.rule-item code {
+  flex-grow: 1;
+  background: var(--gray-50);
+  padding: var(--space-1) var(--space-2);
+  border-radius: 4px;
+}
+
+.rule-item .del {
+  background: none;
+  border: none;
+  color: var(--gray-500);
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 4px;
+  box-shadow: none;
+}
+.rule-item .del:hover {
+  color: var(--error);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Container for the viewer and its hover-toolbar */
 .viewer-container {
   position: relative;
   width: 100%;
-  height: 500px; /* Or your desired height */
+  height: 600px;
   border: 1px solid var(--gray-200);
-  border-radius: var(--border-radius-md, 8px); /* Using your existing variables */
-  overflow: hidden; /* Ensures the toolbar stays within the rounded corners */
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
 }
 
-/* The toolbar itself */
-.viewer-container .toolbar {
+/* The hover-toolbar for camera controls */
+.viewer-container .camera-toolbar {
   position: absolute;
   top: 12px;
   right: 12px;
-  background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
-  backdrop-filter: blur(4px); /* Frosted glass effect */
-  border-radius: var(--border-radius-md, 8px);
-  box-shadow: var(--shadow-sm, 0 2px 4px rgba(0,0,0,0.05));
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
   padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 8px; /* Spacing between buttons */
-  
-  opacity: 0; /* Hidden by default */
-  transform: translateX(10px); /* Start slightly off-screen */
+  gap: 8px;
+  opacity: 0;
+  transform: translateX(10px);
   transition: opacity 0.3s ease, transform 0.3s ease;
   z-index: 10;
 }
 
-/* Show toolbar on hover over the container */
-.viewer-container:hover .toolbar {
+/* Show toolbar on hover */
+.viewer-container:hover .camera-toolbar {
   opacity: 1;
   transform: translateX(0);
 }
 
-/* Styling for the toolbar buttons to match your site's aesthetic */
-.viewer-container .toolbar button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Toolbar button styling */
+.viewer-container .camera-toolbar button {
   width: 40px;
   height: 40px;
   padding: 0;
   font-size: 20px;
   font-weight: bold;
-  color: var(--gray-600);
-  background-color: var(--gray-50);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--border-radius-sm, 6px);
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
-
-.viewer-container .toolbar button:hover {
-  background-color: var(--primary-blue-light);
-  color: var(--primary-blue);
-  border-color: var(--primary-blue);
-  transform: scale(1.05);
-}
-
-
-
