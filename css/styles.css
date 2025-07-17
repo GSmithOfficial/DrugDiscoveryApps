@@ -1158,6 +1158,70 @@ select:focus {
   background: currentColor;
   cursor: pointer;
 }
+/* ================================================================
+   3Dmol.js Viewer Styles (Toolbar Enhancement)
+   ================================================================ */
+
+/* Container to position the viewer and toolbar */
+.viewer-container {
+  position: relative;
+  width: 100%;
+  height: 500px; /* Or your desired height */
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius-md, 8px); /* Using your existing variables */
+  overflow: hidden; /* Ensures the toolbar stays within the rounded corners */
+}
+
+/* The toolbar itself */
+.viewer-container .toolbar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
+  backdrop-filter: blur(4px); /* Frosted glass effect */
+  border-radius: var(--border-radius-md, 8px);
+  box-shadow: var(--shadow-sm, 0 2px 4px rgba(0,0,0,0.05));
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Spacing between buttons */
+  
+  opacity: 0; /* Hidden by default */
+  transform: translateX(10px); /* Start slightly off-screen */
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 10;
+}
+
+/* Show toolbar on hover over the container */
+.viewer-container:hover .toolbar {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Styling for the toolbar buttons to match your site's aesthetic */
+.viewer-container .toolbar button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--gray-600);
+  background-color: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius-sm, 6px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewer-container .toolbar button:hover {
+  background-color: var(--primary-blue-light);
+  color: var(--primary-blue);
+  border-color: var(--primary-blue);
+  transform: scale(1.05);
+}
 
 
 
