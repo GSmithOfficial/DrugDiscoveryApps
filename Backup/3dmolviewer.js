@@ -1,3 +1,23 @@
+You've found a subtle but important bug in the code. You are absolutely right, it should be showing the full sequence, not just the chain name.
+
+The problem is in the generateSequenceView function. The logic for gathering the amino acids was flawed—it correctly identified the names of the chains (like "Chain A"), but it failed to populate the list of residues for that chain. This resulted in an empty sequence list, so only the title was displayed.
+
+I've rewritten the function to be more robust. It now correctly gathers all unique amino acids, sorts them, and then displays them.
+
+The Final Corrected 3dmolviewer.js File
+
+Please replace the content of your 3dmolviewer.js file one last time with the code below. This version specifically fixes the sequence display bug.
+
+    Delete the entire content of your current 3dmolviewer.js file.
+
+    Copy the complete code block below and paste it into the empty file.
+
+    Save the file.
+
+    Perform a hard refresh (Ctrl+Shift+R or Cmd+Shift+R) in your browser.
+
+JavaScript
+
 (function () {
   // Helper to load scripts if they aren't already on the page.
   async function loadScript(src) {
@@ -24,8 +44,33 @@
         throw new Error('A required library (3Dmol or SortableJS) failed to load.');
       }
 
-      // 2. Define the new component HTML structure.
+      // 2. Define the component HTML structure.
       container.innerHTML = `
+        <style>
+          #sequence-container {
+            font-family: 'Courier New', Courier, monospace;
+            width: 100%;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 16px;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            box-sizing: border-box;
+          }
+          .chain-title { font-weight: bold; margin-top: 10px; font-size: 1.1em; }
+          .residue {
+            cursor: pointer;
+            padding: 2px;
+            border-radius: 3px;
+            display: inline-block;
+            text-align: center;
+            min-width: 16px;
+          }
+          .residue:hover { background-color: #e0e0e0; }
+        </style>
+
         <div class="tool-section">
           <h3>3D Molecule Viewer</h3>
           <p>Build a custom molecular visualization by adding rules, then see the result in the viewer.</p>
@@ -67,6 +112,9 @@
           <select id="chainMulti" multiple size="3" style="display:none; width: 100%; margin-bottom: 16px;"></select>
           <input type="text" id="customInput" placeholder="e.g., resi:19,23;chain:'B'" style="display:none; width:100%; margin-bottom: 16px;"/>
 
+          <label>Protein Sequence (click to highlight)</label>
+          <div id="sequence-container"><p>Load a PDB to see the sequence.</p></div>
+
           <label>Rule Stack (drag to reorder)</label>
           <ul id="rulesList" class="rule-list"></ul>
 
@@ -102,10 +150,12 @@
       const addRuleBtn = container.querySelector('#addRuleBtn');
       const rulesList = container.querySelector('#rulesList');
       const shareUrlEl = container.querySelector('#shareUrl');
+      const sequenceContainer = container.querySelector('#sequence-container');
 
       // 4. Initialize viewer and data stores.
       const viewer = $3Dmol.createViewer(host, { backgroundColor: 'var(--white, #FFF)', antialias: true });
       let rules = [];
+      let modelAtoms = []; 
 
       // 5. Core functions.
       const applyViewAndSurface = () => {
@@ -127,7 +177,7 @@
             case 'chain':   const cs = [...chainMulti.selectedOptions].map(o => o.value); return { selStr: `{chain:'${cs.join(',')}'}`, desc: `Chain(s) ${cs.join(',')}`, selObj: { chain: cs } };
             case 'custom':
                 const raw = customIn.value.trim();
-                const selObj = eval('({' + raw + '})'); // Replicates original functionality.
+                const selObj = eval('({' + raw + '})');
                 return { selStr: raw, desc: `Custom: ${raw}`, selObj: selObj };
             default: return { selStr: '{}', desc: 'All atoms', selObj: {} };
         }
@@ -160,12 +210,65 @@
         ).join('');
         applyRules();
       };
+      
+      // ▼▼▼ FUNCTION UPDATED: This function is now more robust. ▼▼▼
+      const generateSequenceView = () => {
+          sequenceContainer.innerHTML = '';
+          const uniqueResiduesByChain = {};
+
+          // Step 1: Gather all unique amino acid residues from the model.
+          modelAtoms.forEach(atom => {
+              // Filter for standard amino acids with a chain and residue number.
+              if (!atom.chain || !atom.resi || !$3Dmol.residues.amino[atom.resn.toLowerCase()]) {
+                  return;
+              }
+              // Initialize an object for the chain if it's the first time we see it.
+              if (!uniqueResiduesByChain[atom.chain]) {
+                  uniqueResiduesByChain[atom.chain] = {};
+              }
+              // Store the residue, using its number as a key to ensure uniqueness.
+              uniqueResiduesByChain[atom.chain][atom.resi] = { resn: atom.resn, resi: atom.resi };
+          });
+
+          // Step 2: Get a sorted list of chain names.
+          const sortedChainIDs = Object.keys(uniqueResiduesByChain).sort();
+
+          // Step 3: Render the HTML for each chain and its residues.
+          sortedChainIDs.forEach(chainId => {
+              // Create and append the title for the chain (e.g., "Chain A").
+              const chainTitle = document.createElement('div');
+              chainTitle.className = 'chain-title';
+              chainTitle.textContent = `Chain ${chainId}`;
+              sequenceContainer.appendChild(chainTitle);
+
+              // Get the residues and sort them by their number.
+              const residues = Object.values(uniqueResiduesByChain[chainId]);
+              residues.sort((a, b) => a.resi - b.resi);
+
+              // Create and append a clickable span for each residue.
+              residues.forEach(residue => {
+                  const resCode = $3Dmol.residues.resnToCode[residue.resn.toLowerCase()] || 'X';
+                  const residueSpan = document.createElement('span');
+                  residueSpan.className = 'residue';
+                  residueSpan.textContent = resCode;
+                  residueSpan.title = `${residue.resn} ${residue.resi}`;
+                  residueSpan.dataset.chain = chainId;
+                  residueSpan.dataset.resi = residue.resi;
+                  sequenceContainer.appendChild(residueSpan);
+              });
+          });
+          
+          if (sortedChainIDs.length === 0) {
+              sequenceContainer.innerHTML = '<p>No standard protein chains found to display.</p>';
+          }
+      };
 
       const loadPDB = async (id) => {
         viewer.clear();
+        sequenceContainer.innerHTML = '<p>Loading PDB and sequence...</p>';
         await $3Dmol.download(`pdb:${id}`, viewer, { doAssembly: true, noSecondaryStrucs: false });
-        const atoms = viewer.selectedAtoms({});
-        const availableChains = [...new Set(atoms.filter(a => a.chain).map(a => a.chain))].sort();
+        modelAtoms = viewer.selectedAtoms({});
+        const availableChains = [...new Set(modelAtoms.filter(a => a.chain).map(a => a.chain))].sort();
         chainMulti.innerHTML = availableChains.map(c => `<option value="${c}">${c}</option>`).join('');
         rules = [
           { selStr: '{hetflag:false}', selObj: { hetflag: false }, styleObj: { cartoon: { color: 'spectrum' } }, desc: 'Protein → Cartoon (Spectrum)' },
@@ -173,6 +276,7 @@
           { selStr: '{resn:"HOH"}', selObj:{resn:"HOH"}, styleObj:{}, desc:'Hide water'}
         ];
         refreshRuleList();
+        generateSequenceView();
         viewer.zoomTo();
       };
       
@@ -202,6 +306,21 @@
           }
       });
       
+      sequenceContainer.addEventListener('click', e => {
+        if (e.target.classList.contains('residue')) {
+          const { chain, resi } = e.target.dataset;
+          const selObj = { chain, resi: parseInt(resi) };
+          
+          rules.push({
+            selObj: selObj,
+            selStr: `{chain:'${chain}',resi:${resi}}`,
+            styleObj: { stick: { colorscheme: 'greenCarbon', radius: 0.2 } },
+            desc: `Residue ${chain}:${resi} → Stick Highlight`
+          });
+          refreshRuleList();
+        }
+      });
+      
       Sortable.create(rulesList, {
           handle: '.handle', animation: 150,
           onEnd: e => {
@@ -216,20 +335,13 @@
       container.querySelector('#camera-resetView').addEventListener('click', () => viewer.zoomTo(200));
       container.querySelector('#camera-toggleSpin').addEventListener('click', () => viewer.spin(!viewer.isSpinning()));
       
-      // ▼▼▼ CHANGE 2: New event handler for the background toggle ▼▼▼
       const bgToggleBtn = container.querySelector('#camera-bg-toggle');
       let isBackgroundDark = false;
       bgToggleBtn.addEventListener('click', () => {
         isBackgroundDark = !isBackgroundDark;
-        if (isBackgroundDark) {
-          viewer.setBackgroundColor(0x000000); // Black
-          bgToggleBtn.innerHTML = '☀️';
-          bgToggleBtn.title = 'Switch to light background';
-        } else {
-          viewer.setBackgroundColor(0xFFFFFF); // White
-          bgToggleBtn.innerHTML = '🌙';
-          bgToggleBtn.title = 'Switch to dark background';
-        }
+        viewer.setBackgroundColor(isBackgroundDark ? 0x000000 : 0xFFFFFF);
+        bgToggleBtn.innerHTML = isBackgroundDark ? '☀️' : '🌙';
+        bgToggleBtn.title = `Switch to ${isBackgroundDark ? 'light' : 'dark'} background`;
       });
 
       // 7. Initial Load.
