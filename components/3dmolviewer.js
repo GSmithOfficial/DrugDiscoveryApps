@@ -24,8 +24,34 @@
         throw new Error('A required library (3Dmol or SortableJS) failed to load.');
       }
 
-      // 2. Define the new component HTML structure.
+      // ▼▼▼ CHANGE 1: ADDED CSS AND HTML FOR THE SEQUENCE VIEWER ▼▼▼
       container.innerHTML = `
+        <style>
+          /* Added styles for the new sequence viewer component */
+          #sequence-container {
+            font-family: 'Courier New', Courier, monospace;
+            width: 100%;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 16px;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            box-sizing: border-box;
+          }
+          .chain-title { font-weight: bold; margin-top: 10px; font-size: 1.1em; }
+          .residue {
+            cursor: pointer;
+            padding: 2px;
+            border-radius: 3px;
+            display: inline-block;
+            text-align: center;
+            min-width: 16px;
+          }
+          .residue:hover { background-color: #e0e0e0; }
+        </style>
+
         <div class="tool-section">
           <h3>3D Molecule Viewer</h3>
           <p>Build a custom molecular visualization by adding rules, then see the result in the viewer.</p>
@@ -67,6 +93,9 @@
           <select id="chainMulti" multiple size="3" style="display:none; width: 100%; margin-bottom: 16px;"></select>
           <input type="text" id="customInput" placeholder="e.g., resi:19,23;chain:'B'" style="display:none; width:100%; margin-bottom: 16px;"/>
 
+          <label>Protein Sequence (click to highlight)</label>
+          <div id="sequence-container"><p>Load a PDB to see the sequence.</p></div>
+
           <label>Rule Stack (drag to reorder)</label>
           <ul id="rulesList" class="rule-list"></ul>
 
@@ -102,10 +131,14 @@
       const addRuleBtn = container.querySelector('#addRuleBtn');
       const rulesList = container.querySelector('#rulesList');
       const shareUrlEl = container.querySelector('#shareUrl');
+      // ▼▼▼ CHANGE 2: GET A REFERENCE TO THE NEW SEQUENCE CONTAINER ▼▼▼
+      const sequenceContainer = container.querySelector('#sequence-container');
+
 
       // 4. Initialize viewer and data stores.
       const viewer = $3Dmol.createViewer(host, { backgroundColor: 'var(--white, #FFF)', antialias: true });
       let rules = [];
+      let modelAtoms = []; // Store atoms of the current model
 
       // 5. Core functions.
       const applyViewAndSurface = () => {
@@ -127,7 +160,7 @@
             case 'chain':   const cs = [...chainMulti.selectedOptions].map(o => o.value); return { selStr: `{chain:'${cs.join(',')}'}`, desc: `Chain(s) ${cs.join(',')}`, selObj: { chain: cs } };
             case 'custom':
                 const raw = customIn.value.trim();
-                const selObj = eval('({' + raw + '})'); // Replicates original functionality.
+                const selObj = eval('({' + raw + '})');
                 return { selStr: raw, desc: `Custom: ${raw}`, selObj: selObj };
             default: return { selStr: '{}', desc: 'All atoms', selObj: {} };
         }
@@ -160,12 +193,49 @@
         ).join('');
         applyRules();
       };
+      
+      // ▼▼▼ CHANGE 3: ADD THE NEW FUNCTION TO GENERATE THE SEQUENCE VIEW ▼▼▼
+      const generateSequenceView = () => {
+          sequenceContainer.innerHTML = '';
+          const chains = {};
+          
+          const uniqueResidues = {};
+          modelAtoms.forEach(atom => {
+              if (!atom.chain || !atom.resn) return;
+              if (!chains[atom.chain]) chains[atom.chain] = [];
+              const residueKey = `${atom.chain}:${atom.resi}`;
+              if (!uniqueResidues[residueKey] && $3Dmol.residues.amino[atom.resn.toLowerCase()]) {
+                  uniqueResidues[residueKey] = true;
+                  chains[atom.chain].push({ resn: atom.resn, resi: atom.resi });
+              }
+          });
+          
+          Object.keys(chains).sort().forEach(chainId => {
+              chains[chainId].sort((a, b) => a.resi - b.resi);
+              const chainTitle = document.createElement('div');
+              chainTitle.className = 'chain-title';
+              chainTitle.textContent = `Chain ${chainId}`;
+              sequenceContainer.appendChild(chainTitle);
+
+              chains[chainId].forEach(residue => {
+                  const resCode = $3Dmol.residues.resnToCode[residue.resn.toLowerCase()] || 'X';
+                  const residueSpan = document.createElement('span');
+                  residueSpan.className = 'residue';
+                  residueSpan.textContent = resCode;
+                  residueSpan.title = `${residue.resn} ${residue.resi}`;
+                  residueSpan.dataset.chain = chainId;
+                  residueSpan.dataset.resi = residue.resi;
+                  sequenceContainer.appendChild(residueSpan);
+              });
+          });
+      };
 
       const loadPDB = async (id) => {
         viewer.clear();
+        sequenceContainer.innerHTML = '<p>Loading PDB and sequence...</p>';
         await $3Dmol.download(`pdb:${id}`, viewer, { doAssembly: true, noSecondaryStrucs: false });
-        const atoms = viewer.selectedAtoms({});
-        const availableChains = [...new Set(atoms.filter(a => a.chain).map(a => a.chain))].sort();
+        modelAtoms = viewer.selectedAtoms({}); // Store atoms for sequence generation
+        const availableChains = [...new Set(modelAtoms.filter(a => a.chain).map(a => a.chain))].sort();
         chainMulti.innerHTML = availableChains.map(c => `<option value="${c}">${c}</option>`).join('');
         rules = [
           { selStr: '{hetflag:false}', selObj: { hetflag: false }, styleObj: { cartoon: { color: 'spectrum' } }, desc: 'Protein → Cartoon (Spectrum)' },
@@ -173,6 +243,7 @@
           { selStr: '{resn:"HOH"}', selObj:{resn:"HOH"}, styleObj:{}, desc:'Hide water'}
         ];
         refreshRuleList();
+        generateSequenceView(); // Generate sequence after loading
         viewer.zoomTo();
       };
       
@@ -202,6 +273,22 @@
           }
       });
       
+      // ▼▼▼ CHANGE 4: ADD EVENT LISTENER FOR SEQUENCE CLICKS ▼▼▼
+      sequenceContainer.addEventListener('click', e => {
+        if (e.target.classList.contains('residue')) {
+          const { chain, resi } = e.target.dataset;
+          const selObj = { chain, resi: parseInt(resi) };
+          
+          rules.push({
+            selObj: selObj,
+            selStr: `{chain:'${chain}',resi:${resi}}`,
+            styleObj: { stick: { colorscheme: 'greenCarbon', radius: 0.2 } },
+            desc: `Residue ${chain}:${resi} → Stick Highlight`
+          });
+          refreshRuleList();
+        }
+      });
+      
       Sortable.create(rulesList, {
           handle: '.handle', animation: 150,
           onEnd: e => {
@@ -216,20 +303,13 @@
       container.querySelector('#camera-resetView').addEventListener('click', () => viewer.zoomTo(200));
       container.querySelector('#camera-toggleSpin').addEventListener('click', () => viewer.spin(!viewer.isSpinning()));
       
-      // ▼▼▼ CHANGE 2: New event handler for the background toggle ▼▼▼
       const bgToggleBtn = container.querySelector('#camera-bg-toggle');
       let isBackgroundDark = false;
       bgToggleBtn.addEventListener('click', () => {
         isBackgroundDark = !isBackgroundDark;
-        if (isBackgroundDark) {
-          viewer.setBackgroundColor(0x000000); // Black
-          bgToggleBtn.innerHTML = '☀️';
-          bgToggleBtn.title = 'Switch to light background';
-        } else {
-          viewer.setBackgroundColor(0xFFFFFF); // White
-          bgToggleBtn.innerHTML = '🌙';
-          bgToggleBtn.title = 'Switch to dark background';
-        }
+        viewer.setBackgroundColor(isBackgroundDark ? 0x000000 : 0xFFFFFF);
+        bgToggleBtn.innerHTML = isBackgroundDark ? '☀️' : '🌙';
+        bgToggleBtn.title = `Switch to ${isBackgroundDark ? 'light' : 'dark'} background`;
       });
 
       // 7. Initial Load.
