@@ -24,7 +24,6 @@
         throw new Error('A required library (3Dmol or SortableJS) failed to load.');
       }
 
-      // 2. Define the new component HTML structure.
       // ▼▼▼ CHANGE 1: ADDED CSS AND HTML FOR THE SEQUENCE VIEWER ▼▼▼
       container.innerHTML = `
         <style>
@@ -200,7 +199,6 @@
           sequenceContainer.innerHTML = '';
           const chains = {};
           
-          // Group residues by chain from the stored model atoms
           const uniqueResidues = {};
           modelAtoms.forEach(atom => {
               if (!atom.chain || !atom.resn) return;
@@ -212,7 +210,6 @@
               }
           });
           
-          // Sort and display
           Object.keys(chains).sort().forEach(chainId => {
               chains[chainId].sort((a, b) => a.resi - b.resi);
               const chainTitle = document.createElement('div');
@@ -282,14 +279,13 @@
           const { chain, resi } = e.target.dataset;
           const selObj = { chain, resi: parseInt(resi) };
           
-          // Create a new rule for the clicked residue and add it to the stack
           rules.push({
             selObj: selObj,
             selStr: `{chain:'${chain}',resi:${resi}}`,
             styleObj: { stick: { colorscheme: 'greenCarbon', radius: 0.2 } },
             desc: `Residue ${chain}:${resi} → Stick Highlight`
           });
-          refreshRuleList(); // This updates the viewer and the rule list UI
+          refreshRuleList();
         }
       });
       
