@@ -1,60 +1,49 @@
-/* components/3dmolviewer.js
-   ──────────────────────────────────────────────────────────────────────────
-   Adds:
-     • <select id="surfaceSelect">   → choose molecular surface   (None/VDW/SAS/SES)
-     • <select id="viewSelect">      → choose global view style   (Default/AO/Outline)
-   Keeps existing rule-builder UI untouched.
+/* components/3dmolviewer.js  –  Ribbon revamp with contextual controls
+   ①  Colour-picker shown only for cartoon / stick / sphere / cross
+   ②  Surface selector (None/VDW/SAS/SES)
+       • if surface ≠ None → viewer.addSurface(...) + setViewStyle('ao')
+       • shows viewSelect dropdown so user may override AO/Outline
+   ③  View-style dropdown hidden until a surface is present (or user chose AO/outline)
+   All other rule-builder logic unchanged.
    2025-07-17
 */
-
 (function () {
 
-  /* ---------- tiny utilities ---------- */
-  function loadScript(src) {
-    return new Promise((res, rej) => {
-      if (document.querySelector(`script[src="${src}"]`)) return res();
-      const s = document.createElement('script');
-      s.src = src;
-      s.onload = res;
-      s.onerror = () => rej(new Error(`Could not load ${src}`));
-      document.head.appendChild(s);
-    });
-  }
+  /* ─── small util ─── */
+  const loadScript = src => new Promise((res, rej) => {
+    if (document.querySelector(`script[src="${src}"]`)) return res();
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = () => rej(Error(`load ${src}`));
+    document.head.appendChild(s);
+  });
   
-  /* ---------- inject once CSS already exists from previous version ---------- */
-  function injectStyles() { /* no change – styles shipped previously */ }
-  
-  /* ======================================================================= */
-  /*                           MAIN INITIALISER                              */
-  /* ======================================================================= */
+  /* ===================================================================== */
   window.init3DMolViewer = async function (container) {
     try {
-      /* 1 – ensure libs ---------------------------------------------------- */
       await Promise.all([
         loadScript('https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.5.1/3Dmol-min.js'),
         loadScript('https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js')
       ]);
-      if (!window.$3Dmol) throw new Error('$3Dmol global missing');
+      if (!window.$3Dmol) throw Error('3Dmol failed to load');
   
-      /* 2 – skeleton HTML -------------------------------------------------- */
-      injectStyles();
+      /* ─── HTML skeleton (single flex row) ─── */
       container.innerHTML = `
         <div class="viewer-builder">
-          <div class="controls">
-            <input type="text" id="pdbInput" value="2POR" size="6" aria-label="PDB id"/>
+          <div class="controls" style="display:flex;flex-wrap:wrap;gap:6px">
+            <input type="text" id="pdbInput" value="2POR" size="6" style="width:auto"/>
             <button id="loadBtn">Load</button>
   
-            <select id="selType">
+            <select id="selType" style="width:auto">
               <option value="protein">Protein (hetflag:false)</option>
               <option value="ligand">Ligands (all het)</option>
               <option value="chain">Chain(s)…</option>
               <option value="custom">Custom AtomSpec…</option>
             </select>
-            <select id="chainMulti" multiple size="1" style="display:none"></select>
-            <input  type="text" id="customInput" placeholder="resi:19,23;chain:B" size="16"
-                    style="display:none"/>
+            <select id="chainMulti" multiple size="1" style="display:none;width:auto"></select>
+            <input type="text" id="customInput" placeholder="resi:19,23;chain:B"
+                   size="16" style="display:none;width:auto"/>
   
-            <select id="stylePreset">
+            <select id="stylePreset" style="width:auto">
               <option value="cartoon">Cartoon</option>
               <option value="stick">Stick</option>
               <option value="sphere">Sphere</option>
@@ -62,19 +51,18 @@
               <option value="cross">Cross</option>
               <option value="hide">Hide</option>
             </select>
-            <input type="color" id="colorPicker" value="#ffffff"/>
   
-            <!-- NEW: molecular surface selector -->
-            <select id="surfaceSelect" title="Molecular surface">
+            <input type="color" id="colorPicker" value="#ffffff" />
+  
+            <select id="surfaceSelect" title="Surface" style="width:auto">
               <option value="none">No Surface</option>
-              <option value="VDW">VDW Surface</option>
-              <option value="SAS">SAS Surface</option>
-              <option value="SES">SES Surface</option>
+              <option value="VDW">VDW</option>
+              <option value="SAS">SAS</option>
+              <option value="SES">SES</option>
             </select>
   
-            <!-- NEW: view style selector -->
-            <select id="viewSelect" title="Rendering effect">
-              <option value="none">Default View</option>
+            <select id="viewSelect" title="Render effect" style="display:none;width:auto">
+              <option value="none">Default</option>
               <option value="ao">Ambient Occlusion</option>
               <option value="outline">Outline</option>
             </select>
@@ -90,189 +78,166 @@
           </label>
         </div>
   
-        <div id="viewerHost"
-             style="width:100%;height:600px;position:relative;margin-top:.75rem"></div>
+        <div id="viewerHost" style="width:100%;height:600px;position:relative;margin-top:.75rem"></div>
       `;
   
-      /* 3 – viewer + DOM refs --------------------------------------------- */
-      const host         = container.querySelector('#viewerHost');
-      const viewer       = $3Dmol.createViewer(host, { backgroundColor: 'white' });
+      /* ─── viewer + refs ─── */
+      const host       = container.querySelector('#viewerHost');
+      const viewer     = $3Dmol.createViewer(host, { backgroundColor: 'white' });
   
-      const pdbInput     = container.querySelector('#pdbInput');
-      const loadBtn      = container.querySelector('#loadBtn');
-      const selType      = container.querySelector('#selType');
-      const chainMulti   = container.querySelector('#chainMulti');
-      const customIn     = container.querySelector('#customInput');
-      const stylePre     = container.querySelector('#stylePreset');
-      const colorPick    = container.querySelector('#colorPicker');
-      const surfaceSel   = container.querySelector('#surfaceSelect');   // NEW
-      const viewSel      = container.querySelector('#viewSelect');      // NEW
-      const addRuleBtn   = container.querySelector('#addRuleBtn');
-      const applyBtn     = container.querySelector('#applyBtn');
-      const rulesList    = container.querySelector('#rulesList');
-      const shareUrlEl   = container.querySelector('#shareUrl');
+      const pdbInput   = container.querySelector('#pdbInput');
+      const loadBtn    = container.querySelector('#loadBtn');
+      const selType    = container.querySelector('#selType');
+      const chainMulti = container.querySelector('#chainMulti');
+      const customIn   = container.querySelector('#customInput');
+      const stylePre   = container.querySelector('#stylePreset');
+      const colorPick  = container.querySelector('#colorPicker');
+      const surfaceSel = container.querySelector('#surfaceSelect');
+      const viewSel    = container.querySelector('#viewSelect');
+      const addRuleBtn = container.querySelector('#addRuleBtn');
+      const applyBtn   = container.querySelector('#applyBtn');
+      const rulesList  = container.querySelector('#rulesList');
+      const shareUrlEl = container.querySelector('#shareUrl');
   
-      /* 4 – data stores ---------------------------------------------------- */
-      let availableChains = [];
-      let rules = [];
+      let rules = [], availableChains = [];
   
-      /* ---------- helper: update global view style ------------------------ */
-      function applyViewStyle() {
-        switch (viewSel.value) {
-          case 'ao':
-            viewer.setViewStyle({ style: 'ambientOcclusion', strength: 1.0, radius: 5 });
-            break;
-          case 'outline':
-            viewer.setViewStyle({ style: 'outline', color: 'black', width: 0.1 });
-            break;
-          default:
-            viewer.setViewStyle({ style: 'none' });
-        }
-        viewer.render();
+      /* ─── context-sensitive toggles ─── */
+      function updateContextControls() {
+        /* colour-picker visible only for colourable styles */
+        const colourful = ['cartoon','stick','sphere','cross'].includes(stylePre.value);
+        colorPick.hidden = !colourful;
+  
+        /* view selector only shown if surface present OR user explicitly chose AO/outline */
+        const needView   = surfaceSel.value !== 'none' || viewSel.value !== 'none';
+        viewSel.hidden   = !needView;
       }
   
-      /* ---------- helper: update molecular surface ----------------------- */
+      /* ─── view style helper ─── */
+      function applyViewStyle() {
+        if (viewSel.value === 'ao')
+          viewer.setViewStyle({style:'ambientOcclusion',strength:1,radius:5});
+        else if (viewSel.value === 'outline')
+          viewer.setViewStyle({style:'outline',color:'black',width:0.1});
+        else
+          viewer.setViewStyle({style:'none'});
+      }
+  
+      /* ─── surface helper ─── */
       function applySurface() {
         viewer.removeAllSurfaces();
         if (surfaceSel.value !== 'none') {
-          const type = $3Dmol.SurfaceType[surfaceSel.value];
-          /* surface over entire current model set */
-          viewer.addSurface(type,
-            { opacity: 0.7, color: 'white' },
-            {} /* atom selection – all atoms */
-          );
+          viewer.addSurface($3Dmol.SurfaceType[surfaceSel.value],
+                            {opacity:0.7,color:'white'}, {});
+          /* auto-enable AO if user hasn’t chosen an override */
+          if (viewSel.value === 'none') {
+            viewSel.value = 'ao';
+            applyViewStyle();
+          }
+        } else {
+          /* if no surface, revert view style unless user chose outline */
+          if (['ao'].includes(viewSel.value)) {
+            viewSel.value = 'none';
+            applyViewStyle();
+          }
         }
+        updateContextControls();
         viewer.render();
       }
   
-      /* ---------- selection + style helpers (unchanged) ------------------ */
-      function populateChains(arr) { chainMulti.innerHTML = arr.map(c =>
-        `<option value="${c}">${c}</option>`).join(''); }
+      /* ─── selection helpers (unchanged) ─── */
+      const populateChains = arr => chainMulti.innerHTML =
+        arr.map(c=>`<option value="${c}">${c}</option>`).join('');
   
-      function selectionFromUI() {
-        switch (selType.value) {
-          case 'protein': return { selStr: '{hetflag:false}', desc: 'Protein',
-                                   selObj: { hetflag: false } };
-          case 'ligand':  return { selStr: '{hetflag:true}', desc: 'Ligands',
-                                   selObj: { hetflag: true } };
-          case 'chain':   const cs = [...chainMulti.selectedOptions].map(o => o.value);
-                          return { selStr: `{chain:'${cs.join(',')}'}`,
-                                   desc: `Chain(s) ${cs.join(',')}`,
-                                   selObj: { chain: cs.join(',') } };
-          case 'custom':  const raw = customIn.value.trim();
-                          return { selStr: raw, desc: `Custom: ${raw}`,
-                                   selObj: eval('(' + raw + ')') }; // eslint-disable-line
-          default:        return { selStr: '{}', desc: 'All atoms', selObj: {} };
+      function selectionFromUI(){
+        switch(selType.value){
+          case'protein':return{selStr:'{hetflag:false}',desc:'Protein',selObj:{hetflag:false}};
+          case'ligand' :return{selStr:'{hetflag:true}', desc:'Ligands',selObj:{hetflag:true}};
+          case'chain'  :const cs=[...chainMulti.selectedOptions].map(o=>o.value);
+            return{selStr:`{chain:'${cs.join(',')}'}`,desc:`Chain(s) ${cs.join(',')}`,
+                   selObj:{chain:cs.join(',')}}; 
+          case'custom' :const raw=customIn.value.trim();
+            return{selStr:raw,desc:`Custom:${raw}`,selObj:eval('('+raw+')')}; // eslint-disable-line
+          default      :return{selStr:'{}',desc:'All atoms',selObj:{}};
         }
       }
   
-      function styleFromUI() {
-        const col = colorPick.value, p = stylePre.value;
-        if (p === 'hide') return { desc: 'Hide', obj: {} };
-        const o = {}; o[p] = (p === 'cartoon' || p === 'stick' ||
-                              p === 'sphere'  || p === 'cross')
-                            ? { color: col } : {};
-        return { desc: `${p} (color ${col})`, obj: o };
+      function styleFromUI(){
+        const col=colorPick.value, p=stylePre.value;
+        if(p==='hide')return{desc:'Hide',obj:{}};
+        const o={}; o[p]=(p==='cartoon'||p==='stick'||p==='sphere'||p==='cross')?{color:col}:{};
+        return{desc:`${p} (color ${col})`,obj:o};
       }
   
-      /* ---------- rule list and applyRules (surface + view) -------------- */
-      function refreshRuleList() {
-        rulesList.innerHTML = rules.map((r,i) =>
+      /* ─── rule list UI & applyRules ─── */
+      function refreshRuleList(){
+        rulesList.innerHTML=rules.map((r,i)=>
           `<li class="rule-item" data-idx="${i}">
              <span class="handle">☰</span><span>${i+1}.</span>
              <code>${r.desc}</code><button class="del">✕</button></li>`).join('');
       }
   
-      function applyRules() {
-        viewer.setStyle({}, {});
-        viewer.removeAllSurfaces(); // will be re-added below
-  
-        rules.forEach(r => viewer.setStyle(r.selObj, r.styleObj));
-  
-        /* surfaces & view style */
-        applySurface();
-        applyViewStyle();
-  
-        viewer.render();
-        viewer.zoomTo();
+      function applyRules(){
+        viewer.setStyle({},{}); viewer.removeAllSurfaces();
+        rules.forEach(r=>viewer.setStyle(r.selObj,r.styleObj));
+        applySurface();           // may add surface + AO
+        applyViewStyle();         // apply user-chosen or auto AO/outl.
+        viewer.render(); viewer.zoomTo();
   
         /* share URL */
-        const p = new URLSearchParams({ pdb: pdbInput.value.trim() || '2POR' });
-        rules.forEach((r,i) => { p.set(`select${i+1}`, r.selStr);
-                                 p.set(`style${i+1}`,  JSON.stringify(r.styleObj)); });
-        shareUrlEl.value = `${location.origin}${location.pathname}#${p.toString()}`;
+        const p=new URLSearchParams({pdb:pdbInput.value.trim()||'2POR'});
+        rules.forEach((r,i)=>{p.set(`select${i+1}`,r.selStr);
+                              p.set(`style${i+1}`,JSON.stringify(r.styleObj));});
+        shareUrlEl.value=`${location.origin}${location.pathname}#${p.toString()}`;
       }
   
-      /* ---------- drag-and-drop, rule add/del (unchanged) ---------------- */
-      new Sortable(rulesList,{
-        handle:'.handle', animation:150,
+      /* ─── drag-n-drop, add / delete rules ─── */
+      new Sortable(rulesList,{handle:'.handle',animation:150,
         onEnd:e=>{const[m]=rules.splice(e.oldIndex,1);
-                  rules.splice(e.newIndex,0,m); refreshRuleList(); applyRules();}
-      });
-      rulesList.addEventListener('click', e=>{
+                  rules.splice(e.newIndex,0,m);refreshRuleList();applyRules();}});
+      rulesList.addEventListener('click',e=>{
         if(e.target.classList.contains('del')){
-          const idx=+e.target.closest('.rule-item').dataset.idx;
-          rules.splice(idx,1); refreshRuleList(); applyRules();
+          rules.splice(+e.target.closest('.rule-item').dataset.idx,1);
+          refreshRuleList();applyRules();
         }
       });
   
-      addRuleBtn.onclick = () => {
-        const s=selectionFromUI(), sty=styleFromUI();
-        rules.push({ selStr:s.selStr, selObj:s.selObj,
-                     styleObj:sty.obj, desc:`${s.desc} → ${sty.desc}` });
-        refreshRuleList();
-      };
-      applyBtn.onclick   = applyRules;
-      surfaceSel.onchange = applySurface;   // NEW
-      viewSel.onchange    = applyViewStyle; // NEW
+      addRuleBtn.onclick=()=>{const s=selectionFromUI(),sty=styleFromUI();
+        rules.push({selStr:s.selStr,selObj:s.selObj,styleObj:sty.obj,
+                   desc:`${s.desc} → ${sty.desc}`});
+        refreshRuleList();};
   
-      selType.onchange = () => {
-        chainMulti.style.display = selType.value==='chain' ? '' : 'none';
-        customIn.style.display   = selType.value==='custom'? '' : 'none';
-      };
+      applyBtn.onclick=applyRules;
   
-      /* ---------- PDB loader (defaults + chains) ------------------------- */
+      /* ─── context listeners ─── */
+      stylePre.onchange = ()=>{updateContextControls();};
+      surfaceSel.onchange=applySurface;
+      viewSel.onchange   =()=>{applyViewStyle();updateContextControls();};
+      selType.onchange   =()=>{chainMulti.style.display=selType.value==='chain'?'':'none';
+                               customIn.style.display =selType.value==='custom'?'':'none';};
+  
+      /* ─── PDB loader ─── */
       async function loadPDB(id){
         viewer.clear(); rules=[];
-        await $3Dmol.download(`pdb:${id}`, viewer, {});
-        const atoms = viewer.selectedAtoms({});
-        availableChains = [...new Set(atoms.filter(a=>a.chain).map(a=>a.chain))];
+        await $3Dmol.download(`pdb:${id}`,viewer,{});
+        const atoms=viewer.selectedAtoms({});
+        availableChains=[...new Set(atoms.filter(a=>a.chain).map(a=>a.chain))];
         populateChains(availableChains);
-  
-        /* default rules */
-        rules.push({ selStr:'{hetflag:false}',  selObj:{hetflag:false},
-                     styleObj:{cartoon:{color:'spectrum'}},
-                     desc:'Protein → cartoon:spectrum'});
-        rules.push({ selStr:'{hetflag:true}',   selObj:{hetflag:true},
-                     styleObj:{stick:{}}, desc:'Ligands → stick'});
-        rules.push({ selStr:'{resn:"HOH"}',     selObj:{resn:'HOH'},
-                     styleObj:{}, desc:'Hide water'});
-        refreshRuleList(); applyRules();
+        rules=[{selStr:'{hetflag:false}',selObj:{hetflag:false},
+                styleObj:{cartoon:{color:'spectrum'}},
+                desc:'Protein → cartoon:spectrum'},
+               {selStr:'{hetflag:true}', selObj:{hetflag:true},
+                styleObj:{stick:{}},    desc:'Ligands → stick'},
+               {selStr:'{resn:"HOH"}',  selObj:{resn:'HOH'},
+                styleObj:{},            desc:'Hide water'}];
+        refreshRuleList();applyRules();updateContextControls();
       }
+      loadBtn.onclick=()=>loadPDB(pdbInput.value.trim()||'2POR');
   
-      loadBtn.onclick = () => loadPDB(pdbInput.value.trim()||'2POR');
+      /* initial load */
+      await loadPDB('2POR');
   
-      /* ---------- deep-link or default load ------------------------------ */
-      if(location.hash.includes('pdb=')){
-        const p=new URLSearchParams(location.hash.slice(1));
-        pdbInput.value = p.get('pdb') || '2POR';
-        await loadPDB(pdbInput.value);
-        let i=1; while(p.has(`select${i}`)&&p.has(`style${i}`)){
-          try { rules[i-1] = { selStr:p.get(`select${i}`),
-                               selObj:eval('('+p.get(`select${i}`)+')'),
-                               styleObj:JSON.parse(p.get(`style${i}`)),
-                               desc:`Rule ${i} (from URL)` }; }
-          catch{} i++; }
-        refreshRuleList(); applyRules();
-      } else {
-        await loadPDB('2POR');
-      }
-  
-    } catch(err){
-      container.innerHTML =
-        `<p style="color:red;text-align:center">${err.message}</p>`;
-      console.error(err);
-    }
+    } catch(e){container.innerHTML=`<p style="color:red;text-align:center">${e.message}</p>`;
+               console.error(e);}
   };
   
   })();
