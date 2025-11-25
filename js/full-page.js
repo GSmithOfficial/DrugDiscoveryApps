@@ -11,20 +11,27 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- Tool registry ---------- */
   const tools = {
     medchem: [
-      { id: 'ic50-converter',         name: 'IC50 Converter',     init: safe(window.initIC50Converter) },
-      { id: 'efficiency-metrics',     name: 'Efficiency Metrics', init: safe(window.initEfficiencyMetrics) },
-      { id: 'concentration-converter',name: 'Conc. Converter',    init: safe(window.initConcentrationConverter) }
+      { id: 'ic50-converter',         name: '🔄 IC50 Converter',     init: safe(window.initIC50Converter) },
+      { id: 'efficiency-metrics',     name: '📈 Efficiency Metrics', init: safe(window.initEfficiencyMetrics) },
+      { id: 'concentration-converter',name: '⚖️ Conc. Converter',    init: safe(window.initConcentrationConverter) }
     ],
     pk: [
-      { id: 'concentration-converter',name: 'Conc. Converter',    init: safe(window.initConcentrationConverter) },
-      { id: 'dose-calculator',        name: 'Dose Calculator',    init: safe(window.initDoseCalculator) }
+      { id: 'concentration-converter',name: '⚖️ Conc. Converter',    init: safe(window.initConcentrationConverter) },
+      { id: 'dose-calculator',        name: '🧮 Dose Calculator',    init: safe(window.initDoseCalculator) }
     ],
     molecular_drawer: [
-      { id: 'molecular-drawer',       name: 'Molecular Drawer',   init: safe(window.initMolecularDrawer) }
+      { id: 'molecular-drawer',       name: '✏️ Molecular Drawer',   init: safe(window.initMolecularDrawer) }
     ],
     spectroscopy: [
-      { id: 'nmrium-viewer',          name: 'NMR Viewer',         init: safe(window.initNMRViewer) }
+      { id: 'nmrium-viewer',          name: '📡 NMR Viewer',         init: safe(window.initNMRViewer) }
     ]
+  };
+
+  const categoryIcons = {
+    medchem: '⚗️',
+    pk: '💊',
+    molecular_drawer: '🧬',
+    spectroscopy: '📊'
   };
 
   /* ---------- DOM refs ---------- */
@@ -42,7 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
   Object.keys(tools).forEach(cat => {
     const tab = document.createElement('button');
     tab.className = 'tab';
-    tab.textContent = cat.replace('_',' ').replace(/\b\w/g, s=>s.toUpperCase());
+    const icon = categoryIcons[cat] || '';
+    const label = cat.replace('_',' ').replace(/\b\w/g, s=>s.toUpperCase());
+    tab.innerHTML = `<span class="tab-icon">${icon}</span> ${label}`;
     tab.dataset.category = cat;
     nav.appendChild(tab);
   });

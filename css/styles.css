@@ -55,9 +55,10 @@
     --space-6: clamp(32px, 2vw, 48px);
 
     /* Layout */
-    --header-h: 64px;
+    --header-h: 72px;
+    --nav-h: 64px;
     --max-width: 1440px;
-    --content-padding: var(--space-4);
+    --content-padding: var(--space-5);
 
     /* Typography */
     --font-display: 'Bitter', 'Georgia', serif;
@@ -118,7 +119,7 @@
     padding: 0 var(--content-padding);
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-medium);
     position: sticky;
@@ -129,7 +130,7 @@
 
   h1 {
     font-family: var(--font-display);
-    font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+    font-size: clamp(1.6rem, 2.5vw, 2rem);
     font-weight: 700;
     letter-spacing: -0.02em;
     background: linear-gradient(135deg, var(--navy-darkest) 0%, var(--teal-deep) 100%);
@@ -152,14 +153,14 @@
   .top-nav {
     position: sticky;
     top: var(--header-h);
-    height: 52px;
+    height: var(--nav-h);
     display: flex;
     align-items: center;
-    gap: 32px;
-    background: rgba(255, 255, 255, 0.9);
+    gap: 40px;
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     z-index: 950;
-    padding: 0 32px;
+    padding: 0 var(--content-padding);
     border-bottom: 1px solid var(--border-subtle);
     box-shadow: var(--shadow-soft);
   }
@@ -169,17 +170,30 @@
     border: none;
     font-family: var(--font-body);
     font-weight: 500;
-    font-size: 0.95rem;
+    font-size: 1rem;
     letter-spacing: 0.02em;
     cursor: pointer;
     position: relative;
     color: var(--text-secondary);
-    padding: 0 8px;
+    padding: var(--space-2) var(--space-3);
     transition: color var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .tab .tab-icon {
+    font-size: 1.2em;
+    display: inline-block;
+    transition: transform var(--transition-base);
   }
 
   .tab:hover {
     color: var(--teal-deep);
+  }
+
+  .tab:hover .tab-icon {
+    transform: scale(1.1);
   }
 
   .tab.active {
@@ -187,12 +201,17 @@
     font-weight: 600;
   }
 
+  .tab.active .tab-icon {
+    transform: scale(1.15);
+  }
+
   .ink-bar {
     position: absolute;
-    bottom: 0;
+    bottom: -1px;
     height: 3px;
     background: linear-gradient(90deg, var(--teal-deep) 0%, var(--navy-medium) 100%);
     box-shadow: var(--glow-teal);
+    border-radius: 3px 3px 0 0;
     transition: left 0.35s cubic-bezier(0.65, 0, 0.35, 1),
                 width 0.35s cubic-bezier(0.65, 0, 0.35, 1);
   }
@@ -205,8 +224,8 @@
     backdrop-filter: blur(8px);
     box-shadow: inset 0 1px 0 var(--border-subtle);
     display: flex;
-    gap: 24px;
-    padding: 0 32px;
+    gap: 32px;
+    padding: 0 var(--content-padding);
   }
 
   .tool-sheet.compact {
@@ -216,12 +235,12 @@
   .tool-btn {
     background: none;
     border: none;
-    padding: 14px 0;
+    padding: var(--space-4) 0;
     cursor: pointer;
     color: var(--text-secondary);
     font-family: var(--font-body);
-    font-size: 0.9rem;
-    font-weight: 400;
+    font-size: 0.95rem;
+    font-weight: 500;
     transition: all var(--transition-base);
     position: relative;
   }
@@ -248,9 +267,9 @@
   }
 
   .top-nav.compact {
-    height: 40px;
-    font-size: 0.9rem;
-    gap: 20px;
+    height: 52px;
+    font-size: 0.95rem;
+    gap: 32px;
   }
 
   /* Main Content */
@@ -259,7 +278,7 @@
     width: 100%;
     max-width: var(--max-width);
     margin: 0 auto;
-    padding: calc(var(--space-6) + var(--header-h) + 52px) var(--content-padding) var(--space-6);
+    padding: calc(var(--space-6) + var(--header-h) + var(--nav-h)) var(--content-padding) var(--space-6);
     animation: contentReveal 0.8s var(--transition-base) 0.2s both;
   }
 
@@ -280,8 +299,8 @@
     backdrop-filter: blur(16px);
     border: 1px solid var(--border-medium);
     border-radius: 16px;
-    padding: var(--space-5);
-    margin-bottom: var(--space-5);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
     box-shadow: var(--shadow-medium);
     transition: all var(--transition-base);
     animation: cardSlideIn 0.6s var(--transition-base);
@@ -320,7 +339,7 @@
 
   .results-pane {
     position: sticky;
-    top: calc(var(--header-h) + 52px + var(--space-4));
+    top: calc(var(--header-h) + var(--nav-h) + var(--space-5));
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
@@ -361,11 +380,11 @@
   .metric-card h3 {
     margin-bottom: var(--space-3);
     font-family: var(--font-display);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
   }
 
   .metric-card .value {
@@ -417,7 +436,7 @@
     margin-bottom: var(--space-2);
     font-family: var(--font-body);
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -435,6 +454,7 @@
     color: var(--text-primary);
     font-family: var(--font-body);
     font-size: 15px;
+    min-height: 44px;
     transition: all var(--transition-base);
   }
 
@@ -493,6 +513,7 @@
 
   button:hover {
     background: var(--bg-button-hover);
+    color: var(--white-pure);
     box-shadow: var(--shadow-medium), var(--glow-navy);
     transform: translateY(-3px) scale(1.02);
   }
@@ -725,36 +746,39 @@
   /* Responsive Tweaks */
   @media (max-width: 768px) {
     :root {
-      --header-h: 56px;
+      --header-h: 64px;
+      --nav-h: 56px;
     }
 
     .top-nav {
-      gap: 16px;
-      padding: 0 var(--space-3);
+      gap: 20px;
+      padding: 0 var(--space-4);
     }
 
     .tool-section {
-      padding: var(--space-4);
+      padding: var(--space-5);
       border-radius: 12px;
     }
 
     h1 {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
     }
   }
 
   @media (max-width: 480px) {
     :root {
-      --header-h: 52px;
+      --header-h: 56px;
+      --nav-h: 52px;
     }
 
     .top-nav {
-      height: 44px;
+      height: 52px;
+      gap: 12px;
     }
 
     .tab {
-      padding: 0 4px;
-      font-size: 0.85rem;
+      padding: var(--space-2);
+      font-size: 0.9rem;
     }
 
     .ink-bar {
